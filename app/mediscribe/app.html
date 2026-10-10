@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MediScribe Pro — Clinical Safety (research)</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="/mediscribe/manifest.json">
+<meta name="theme-color" content="#0d5c5c">
+<link rel="apple-touch-icon" href="/mediscribe/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--teal:#0b6e5f;--teal-d:#084f45;--red:#c62828;--red-bg:#fdecea;--amber:#b26a00;--amber-bg:#fff6e0;--info:#1565c0;--info-bg:#e8f0fe;--ok:#2e7d32;--ok-bg:#e8f5e9;--line:#e5e5e5;--mut:#666}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;color:#1c1c1c;background:#f7f9f8;line-height:1.55}
+header{background:var(--teal);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+header h1{margin:0;font-size:1.2rem}
+header .who{font-size:.82rem;opacity:.95}
+.disclaim{background:#fff3e0;border-bottom:2px solid #ffb74d;padding:10px 16px;font-size:.82rem;color:#5d4037}
+.disclaim b{color:#bf360c}
+.wrap{max-width:900px;margin:0 auto;padding:14px 14px 60px}
+.tabs{display:flex;gap:8px;margin:14px 0;position:sticky;top:0;background:#f7f9f8;padding:8px 0;z-index:5;flex-wrap:wrap}
+.tabs button{flex:1;min-width:110px;padding:11px 4px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:.92rem;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:1.02rem;color:var(--teal-d)}
+label{font-size:.85rem;font-weight:600;display:block;margin:10px 0 4px}
+input[type=text],input[type=number],input[type=password],input[type=email],select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:1rem;font-family:inherit}
+textarea{min-height:110px;resize:vertical}
+.btn{display:inline-block;background:var(--teal);color:#fff;font-weight:700;padding:11px 20px;border-radius:10px;border:0;cursor:pointer;font-size:1rem;margin:8px 6px 0 0}
+.btn.red{background:var(--red)}.btn.ghost{background:#fff;color:var(--teal);border:1px solid var(--teal)}
+.btn.sm{padding:7px 12px;font-size:.85rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:#e0f2f1;color:#004d40;border-radius:16px;padding:4px 10px;font-size:.82rem;display:inline-flex;align-items:center;gap:6px}
+.chip button{border:0;background:none;color:#004d40;cursor:pointer;font-weight:700}
+.pickrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pick{border:1px solid #bbb;background:#fff;border-radius:16px;padding:6px 12px;font-size:.85rem;cursor:pointer}
+.pick.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.flag{border-radius:10px;padding:12px;margin-bottom:10px;border-left:6px solid}
+.flag.red{background:var(--red-bg);border-color:var(--red)}
+.flag.amber{background:var(--amber-bg);border-color:var(--amber)}
+.flag.info{background:var(--info-bg);border-color:var(--info)}
+.flag h4{margin:0 0 4px;font-size:.98rem}
+.flag.red h4{color:var(--red)}.flag.amber h4{color:var(--amber)}.flag.info h4{color:var(--info)}
+.flag p{margin:4px 0;font-size:.9rem}
+.flag .src{font-size:.78rem;color:var(--mut)}
+.confirm{display:flex;gap:8px;align-items:flex-start;margin-top:8px;background:rgba(255,255,255,.7);border-radius:8px;padding:8px;font-size:.85rem}
+.fbrow{display:flex;gap:6px;margin-top:8px;align-items:center;font-size:.82rem;flex-wrap:wrap}
+.fbrow button{border:1px solid #bbb;background:#fff;border-radius:14px;padding:3px 10px;cursor:pointer;font-size:.8rem}
+.fbrow button.on-y{background:var(--ok-bg);border-color:var(--ok)}
+.fbrow button.on-n{background:var(--red-bg);border-color:var(--red)}
+.secttl{font-size:.95rem;font-weight:700;margin:16px 0 8px;color:var(--teal-d)}
+.muted{color:var(--mut);font-size:.85rem}
+.recbox{border:2px dashed var(--red);border-radius:12px;padding:14px;text-align:center;margin:10px 0}
+.recbox.live{border-style:solid;background:var(--red-bg)}
+.kv{font-size:.88rem;margin:3px 0}
+footer{padding:20px;text-align:center;color:var(--mut);font-size:.8rem}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.75rem;font-weight:700}
+.b-red{background:var(--red);color:#fff}.b-amber{background:#fb8c00;color:#fff}.b-info{background:var(--info);color:#fff}.b-ok{background:var(--ok);color:#fff}.b-mut{background:#9e9e9e;color:#fff}
+.prow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header>
+<div><h1>🩺 MediScribe Pro <span style="font-size:.75rem;font-weight:400">v2 · research</span></h1></div>
+<div class="who hidden" id="who"></div>
+</header>
+<div class="disclaim">⚠️ <b>Research prototype — NOT medical advice.</b> Flags must be verified with Lexicomp/Medscape and a doctor/pharmacist. Record patients only with consent. Not HIPAA-compliant — supervised testing only.</div>
+<div class="wrap">
+
+<div id="view-auth">
+<div class="card" style="max-width:420px;margin:30px auto">
+<h3 id="auth-title">Login</h3>
+<label>Name (signup only)<input type="text" id="a-name" autocomplete="name"></label>
+<label>Email<input type="email" id="a-email" autocomplete="email"></label>
+<label>Password (min 8)<input type="password" id="a-pass" autocomplete="current-password"></label>
+<button class="btn" id="a-go" onclick="doAuth()">Login</button>
+<p class="muted" style="margin-top:12px"><a href="#" onclick="toggleAuth(event)" id="a-toggle">No account? Sign up</a></p>
+<p class="muted" id="a-msg"></p>
+<p class="muted">First account becomes <b>admin</b>. Admin creates doctor/pharmacist accounts.</p>
+</div>
+</div>
+
+<div id="view-main" class="hidden">
+<div class="tabs">
+<button data-t="dash" class="on" onclick="tab('dash')">👥 Patients</button>
+<button data-t="consult" onclick="tab('consult')">🎙️ Consult</button>
+<button data-t="dose" onclick="tab('dose')">💊 Dose</button>
+<button data-t="history" onclick="tab('history')">📋 History</button>
+<button data-t="admin" id="tab-admin" class="hidden" onclick="tab('admin')">⚙️ Admin</button>
+</div>
+
+<div id="t-dash">
+<div class="prow" style="margin-bottom:10px">
+<input type="text" id="p-search" placeholder="🔍 Search patients…" oninput="renderPatients()" style="flex:1">
+<button class="btn sm" onclick="openPatientForm()">+ New patient</button>
+</div>
+<div id="patient-list"></div>
+<div class="card hidden" id="pform-card">
+<h3 id="pform-title">New patient</h3>
+<div class="prow"><div style="flex:2"><label>Full name *<input type="text" id="p-name"></label></div>
+<div style="flex:1"><label>MRN / file no.<input type="text" id="p-mrn"></label></div></div>
+<div class="prow"><div style="flex:1"><label>Age<input type="number" id="p-age" min="0" max="120"></label></div>
+<div style="flex:1"><label>Sex<select id="p-sex"><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select></label></div></div>
+<label>Conditions</label><div class="pickrow" id="p-conds"></div>
+<label>Allergies</label>
+<div class="prow"><div style="flex:1"><input type="text" id="p-alg-in" placeholder="e.g. penicillin"></div>
+<button class="btn sm ghost" onclick="addAlg()">Add</button></div>
+<div class="chips" id="p-alg-chips"></div>
+<label>Current medications</label>
+<div class="prow"><div style="flex:1"><input type="text" id="p-med-in" list="druglist" placeholder="type drug name…"></div>
+<button class="btn sm ghost" onclick="addMed()">Add</button></div>
+<datalist id="druglist"></datalist>
+<div class="chips" id="p-med-chips"></div>
+<label>Notes<textarea id="p-notes" rows="2"></textarea></label>
+<div><button class="btn" onclick="savePatient()">💾 Save patient</button>
+<button class="btn ghost" onclick="closePatientForm()">Cancel</button></div>
+<div id="pform-safety"></div>
+</div>
+</div>
+
+<div id="t-consult" class="hidden">
+<div class="card">
+<h3>🎙️ Consultation</h3>
+<label>Patient<select id="c-patient"></select></label>
+<label>Transcript</label>
+<div class="recbox" id="recbox">
+<div id="rec-hint">🎤 Mic se bolo (English/Urdu) ya neeche paste karo</div>
+<button class="btn red sm" id="rec-btn" onclick="toggleRec()">● Start recording</button>
+</div>
+<textarea id="transcript" placeholder="…ya transcript yahan paste karo"></textarea>
+<div><button class="btn" onclick="analyze()">🔍 Analyze — kaunsi dawai NAHI deni?</button>
+<button class="btn ghost sm" onclick="loadDemo()">🧪 Load demo</button></div>
+</div>
+<div id="analysis"></div>
+<div class="card">
+<h3>🔍 Live drug lookup <span class="muted" style="font-weight:400">(NLM RxNorm)</span></h3>
+<div class="prow"><input type="text" id="lu-name" placeholder="drug name…" style="flex:1">
+<button class="btn sm ghost" onclick="lookupDrug()">Verify</button></div>
+<div id="lu-out" class="muted"></div>
+</div>
+<div class="card">
+<h3>💬 AI Assistant <span class="muted" style="font-weight:400">(Gemini — tumhari key, tumhare browser me)</span></h3>
+<label>Gemini API key <a href="https://aistudio.google.com" target="_blank" rel="noopener" style="font-weight:400">🔑 free key banao (2 min)</a><input type="password" id="ai-key" oninput="saveAiKey()"></label>
+<div id="ai-chat" style="max-height:260px;overflow:auto;margin:8px 0"></div>
+<div class="prow"><input type="text" id="ai-in" placeholder="Engine ke flags ke baare me poocho…" style="flex:1">
+<button class="btn sm" onclick="aiAsk()">Bhejo</button></div>
+<p class="muted">AI sirf engine ke flags samjhata hai — naye faisle nahi karta. Har jawab doctor/pharmacist se verify karo.</p>
+</div>
+</div>
+
+<div id="t-dose" class="hidden">
+<div class="card" style="border:2px solid #ffb74d;background:#fff8e1">
+<h3>💊 Dose calculator <span class="muted" style="font-weight:400">(renal / hepatic adjustment)</span></h3>
+<p class="muted" style="color:#5d4037">⚠️ <b>Educational reference — NOT medical advice.</b> Verify every result with Lexicomp/Medscape and a doctor/pharmacist before any dosing decision. Deterministic math from FDA label tables — no AI guessing.</p>
+</div>
+<div class="card">
+<h3>Patient parameters</h3>
+<div class="prow">
+<div style="flex:1"><label>Age (years) *<input type="number" id="d-age" min="0" max="120"></label></div>
+<div style="flex:1"><label>Sex<select id="d-sex"><option value="">—</option><option>Male</option><option>Female</option></select></label></div>
+<div style="flex:1"><label>Weight (kg) *<input type="number" id="d-wt" min="1" max="400" step="0.1"></label></div>
+</div>
+<div class="prow">
+<div style="flex:1"><label>Height (cm)<input type="number" id="d-ht" min="20" max="250" step="0.5"></label></div>
+<div style="flex:1"><label>Serum creatinine (mg/dL) *<input type="number" id="d-scr" min="0.1" max="20" step="0.01"></label></div>
+<div style="flex:1"><label>Kidney function method<select id="d-gfr">
+<option value="cockcroft_gault">Cockcroft-Gault CrCl</option>
+<option value="ckdepi_2021">eGFR (CKD-EPI 2021)</option>
+<option value="schwartz">Schwartz (pediatric)</option>
+</select></label></div>
+</div>
+<div class="prow">
+<div style="flex:1"><label>Drug *<select id="d-drug"></select></label></div>
+<div style="flex:1" id="d-ind-wrap" class="hidden"><label>Indication / regimen<select id="d-ind"></select></label></div>
+</div>
+<div class="prow" id="d-freename-wrap" class="hidden">
+<div style="flex:1"><label>Or any other drug (fallback: live FDA label text)<input type="text" id="d-freename" placeholder="e.g. atorvastatin"></label></div>
+</div>
+<p class="muted"><a href="#" onclick="toggleDoseFree(event)" id="d-free-toggle">Drug not in the list? Use any drug name →</a></p>
+<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Child-Pugh inputs (only if hepatic adjustment needed)</summary>
+<div class="prow">
+<div style="flex:1"><label>Bilirubin (mg/dL)<input type="number" id="d-cp-bili" step="0.1"></label></div>
+<div style="flex:1"><label>Albumin (g/dL)<input type="number" id="d-cp-alb" step="0.1"></label></div>
+<div style="flex:1"><label>INR<input type="number" id="d-cp-inr" step="0.01"></label></div>
+</div>
+<div class="prow">
+<div style="flex:1"><label>Ascites<select id="d-cp-asc"><option value="">—</option><option value="1">None</option><option value="2">Mild</option><option value="3">Severe</option></select></label></div>
+<div style="flex:1"><label>Encephalopathy<select id="d-cp-enc"><option value="">—</option><option value="1">None</option><option value="2">Mild</option><option value="3">Severe</option></select></label></div>
+</div></details>
+<div class="prow" style="margin-top:8px">
+<label style="font-weight:400"><input type="checkbox" id="d-dialysis" style="width:auto"> On dialysis</label>
+<label style="font-weight:400"><input type="checkbox" id="d-preg" style="width:auto"> Pregnant</label>
+</div>
+<div><button class="btn" onclick="doseCalc()">🧮 Calculate dose</button></div>
+</div>
+<div id="dose-out"></div>
+</div>
+
+<div id="t-history" class="hidden">
+<div class="card"><h3>📋 Saved consultations</h3>
+<label>Filter by patient<select id="h-patient" onchange="renderHistory()"><option value="">All patients</option></select></label>
+<div id="hist-list"></div></div>
+</div>
+
+<div id="t-admin" class="hidden">
+<div class="card"><h3>👥 Users</h3>
+<div class="prow">
+<input type="text" id="u-name" placeholder="Name" style="flex:1">
+<input type="email" id="u-email" placeholder="Email" style="flex:1">
+<input type="password" id="u-pass" placeholder="Password (min 8)" style="flex:1">
+<select id="u-role"><option value="doctor">doctor</option><option value="pharmacist">pharmacist</option><option value="admin">admin</option></select>
+<button class="btn sm" onclick="createUser()">Add</button></div>
+<div id="user-list"></div></div>
+<div class="card"><h3>⛓️ Audit trail <span class="muted" style="font-weight:400" id="chain-st"></span></h3>
+<div id="audit-list"></div></div>
+<div class="card"><h3>📊 Validation stats <span class="muted" style="font-weight:400">(hospital test feedback)</span></h3>
+<div id="fb-stats" class="muted"></div></div>
+<div class="card"><h3>💾 Backup <span class="muted" style="font-weight:400">(deploy par data wipe hota hai — pehle backup le lo)</span></h3>
+<div class="prow"><button class="btn sm" onclick="dlBackup()">Download backup (JSON)</button>
+<label class="btn sm ghost" style="cursor:pointer">Restore<input type="file" id="restore-file" accept=".json" style="display:none" onchange="doRestore()"></label></div>
+<p class="muted" id="restore-msg"></p></div>
+</div>
+
+</div>
+</div>
+<footer>MediScribe Pro v2 · research prototype · team server · not medical advice · supervised testing only</footer>
+<script>
+"use strict";
+/* ================= API ================= */
+const $=id=>document.getElementById(id);
+async function api(path,opts){
+ opts=opts||{};
+ const r=await fetch("/mediscribe/api"+path,Object.assign({headers:{"Content-Type":"application/json"}},opts));
+ if(r.status===401){showAuth();throw new Error("login_required");}
+ return r.json();
+}
+const post=(p,b)=>api(p,{method:"POST",body:JSON.stringify(b||{})});
+const put=(p,b)=>api(p,{method:"PUT",body:JSON.stringify(b||{})});
+const del=p=>api(p,{method:"DELETE"});
+const get=p=>api(p);
+
+/* ================= AUTH ================= */
+let ME=null, DRUGS=[], CONDS=[], signupMode=false;
+function toggleAuth(e){e.preventDefault();signupMode=!signupMode;
+ $("auth-title").textContent=signupMode?"Sign up":"Login";
+ $("a-go").textContent=signupMode?"Create account":"Login";
+ $("a-toggle").textContent=signupMode?"Have an account? Login":"No account? Sign up";
+ $("a-msg").textContent="";}
+function showAuth(){$("view-auth").classList.remove("hidden");$("view-main").classList.add("hidden");
+ $("who").classList.add("hidden");ME=null;}
+async function doAuth(){
+ const name=$("a-name").value.trim(),email=$("a-email").value.trim(),pass=$("a-pass").value;
+ if(!email||!pass){$("a-msg").textContent="Email aur password dono likho.";return;}
+ $("a-msg").textContent="…";
+ const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),20000);
+ try{
+  const r=await fetch("/mediscribe/api"+(signupMode?"/signup":"/login"),{method:"POST",headers:{"Content-Type":"application/json"},signal:ctl.signal,body:JSON.stringify({name,email,password:pass})}).then(r=>r.json());
+  clearTimeout(t);
+  if(!r.ok){const FRIENDLY={password_short:"Password kam se kam 8 characters ka ho.",email_taken:"Ye email pehle se registered hai — neeche Login dabao.",bad_credentials:"Ye email registered nahi ya password ghalat hai — pehle 'No account? Sign up' se account banao.",bad_json:"Form dobara bharke try karo."};$("a-msg").textContent=FRIENDLY[r.error]||("Error: "+r.error);return;}
+  enter(r.user);
+ }catch(e){clearTimeout(t);$("a-msg").textContent="Network slow ya offline — dobara try karo.";}
+}
+async function enter(user){
+ ME=user;
+ const d=await get("/drugs");DRUGS=d.drugs||[];CONDS=d.conditions||[];
+ $("druglist").innerHTML=DRUGS.map(x=>`<option value="${x.names[0]}">`).join("");
+ $("p-conds").innerHTML=CONDS.map(c=>`<button type="button" class="pick" data-c="${c.id}" onclick="togCond('${c.id}')">${c.label}</button>`).join("");
+ $("view-auth").classList.add("hidden");$("view-main").classList.remove("hidden");
+ $("who").classList.remove("hidden");
+ $("who").innerHTML=`${esc(ME.name)} <span class="badge ${ME.role==="admin"?"b-red":"b-info"}">${ME.role}</span> <a href="#" onclick="logout(event)" style="color:#fff">logout</a>`;
+ if(ME.role==="admin")$("tab-admin").classList.remove("hidden");
+ await refreshAll();tab("dash");
+}
+async function logout(e){e.preventDefault();await post("/logout");showAuth();}
+async function boot(){
+ try{const r=await get("/me");if(r.ok)enter(r.user);else showAuth();}
+ catch(e){showAuth();}
+ try{const k=localStorage.getItem("mediscribe_gemini_key");if(k)$("ai-key").value=k;}catch(e){}
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ================= TABS ================= */
+function tab(t){
+ document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+ ["dash","consult","dose","history","admin"].forEach(x=>$("t-"+x).classList.toggle("hidden",x!==t));
+ if(t==="history")renderHistory();
+ if(t==="admin")renderAdmin();
+ if(t==="dose")loadDoseDrugs();
+}
+
+/* ================= PATIENTS ================= */
+let PATIENTS=[], selConds=new Set(), algList=[], medList=[], editId=null;
+async function refreshAll(){await loadPatients();}
+async function loadPatients(){
+ const r=await get("/patients");PATIENTS=r.patients||[];renderPatients();fillPatientSelects();
+}
+function fillPatientSelects(){
+ const opts=PATIENTS.map(p=>`<option value="${p.id}">${esc(p.name)}${p.mrn?" ("+esc(p.mrn)+")":""}</option>`).join("");
+ $("c-patient").innerHTML=opts;$("h-patient").innerHTML='<option value="">All patients</option>'+opts;
+}
+function renderPatients(){
+ const q=$("p-search").value.toLowerCase();
+ const list=PATIENTS.filter(p=>(p.name+" "+(p.mrn||"")).toLowerCase().includes(q));
+ $("patient-list").innerHTML=list.length?list.map(p=>`
+ <div class="card"><div class="prow" style="justify-content:space-between">
+ <div><b>${esc(p.name)}</b> <span class="muted">${p.age?p.age+"y":""} ${esc(p.sex||"")}${p.mrn?" · MRN "+esc(p.mrn):""}</span>
+ <div class="kv">🩺 ${p.conditions.map(c=>condLabel(c)).join(", ")||"—"}</div>
+ <div class="kv">🤧 Allergies: ${p.allergies.map(esc).join(", ")||"—"}</div>
+ <div class="kv">💊 Meds: ${p.meds.map(esc).join(", ")||"—"}</div></div>
+ <div><button class="btn sm" onclick="quickCheck(${p.id})">🛡️ Safety check</button>
+ <button class="btn sm ghost" onclick="openPatientForm(${p.id})">Edit</button>
+ ${ME&&ME.role!=="pharmacist"?`<button class="btn sm ghost" onclick="delPatient(${p.id})">Delete</button>`:""}
+ </div></div><div id="pcheck-${p.id}"></div></div>`).join("")
+ :'<p class="muted">No patients yet.</p>';
+}
+function condLabel(id){const c=CONDS.find(x=>x.id===id);return c?c.label:id;}
+function openPatientForm(id){
+ editId=id||null;selConds=new Set();algList=[];medList=[];
+ $("pform-title").textContent=id?"Edit patient":"New patient";
+ $("pform-safety").innerHTML="";
+ if(id){const p=PATIENTS.find(x=>x.id===id);
+  $("p-name").value=p.name;$("p-mrn").value=p.mrn||"";$("p-age").value=p.age||"";
+  $("p-sex").value=p.sex||"";p.conditions.forEach(c=>selConds.add(c));
+  algList=p.allergies.slice();medList=p.meds.slice();$("p-notes").value=p.notes||"";
+ }else{$("p-name").value="";$("p-mrn").value="";$("p-age").value="";$("p-sex").value="";$("p-notes").value="";}
+ document.querySelectorAll("#p-conds .pick").forEach(b=>b.classList.toggle("on",selConds.has(b.dataset.c)));
+ renderAlgChips();renderMedChips();
+ $("pform-card").classList.remove("hidden");$("pform-card").scrollIntoView();
+}
+function closePatientForm(){$("pform-card").classList.add("hidden");}
+function togCond(id){selConds.has(id)?selConds.delete(id):selConds.add(id);
+ document.querySelector(`#p-conds [data-c="${id}"]`).classList.toggle("on");}
+function addAlg(){const v=$("p-alg-in").value.trim().toLowerCase();
+ if(v&&!algList.includes(v)){algList.push(v);$("p-alg-in").value="";renderAlgChips();}}
+function renderAlgChips(){$("p-alg-chips").innerHTML=algList.map((a,i)=>`<span class="chip">${esc(a)}<button onclick="algList.splice(${i},1);renderAlgChips()">×</button></span>`).join("");}
+function addMed(){const v=$("p-med-in").value.trim();
+ if(v&&!medList.includes(v)){medList.push(v);$("p-med-in").value="";renderMedChips();}}
+function renderMedChips(){$("p-med-chips").innerHTML=medList.map((a,i)=>`<span class="chip">${esc(a)}<button onclick="medList.splice(${i},1);renderMedChips()">×</button></span>`).join("");}
+async function savePatient(){
+ const name=$("p-name").value.trim();
+ if(!name){alert("Name zaroori hai.");return;}
+ const body={mrn:$("p-mrn").value.trim(),name,age:parseInt($("p-age").value)||0,
+  sex:$("p-sex").value,conditions:[...selConds],allergies:algList,meds:medList,
+  notes:$("p-notes").value.trim()};
+ const r=editId?await put("/patients/"+editId,body):await post("/patients",body);
+ if(!r.ok){alert("Error: "+r.error);return;}
+ await loadPatients();closePatientForm();
+ const s=r.safety;
+ $("pform-safety").innerHTML=""; // form closed; show result inline below instead
+ alert(editId?"Patient updated.":"Patient saved."+(s?` Safety check: ${s.red} red, ${s.amber} amber flags.`:""));
+}
+async function delPatient(id){
+ if(!confirm("Delete this patient and their consultations?"))return;
+ const r=await del("/patients/"+id);if(r.ok)loadPatients();else alert("Error: "+r.error);
+}
+async function quickCheck(id){
+ const box=$("pcheck-"+id);box.innerHTML='<p class="muted">Checking…</p>';
+ const r=await post("/analyze",{patient_id:id,transcript:"safety check of current medications: "+PATIENTS.find(p=>p.id===id).meds.join(", ")});
+ if(!r.ok){box.innerHTML='<p class="muted">Error.</p>';return;}
+ box.innerHTML=renderFlags(r.flags,false);
+}
+/* ================= CONSULT / ANALYZE ================= */
+let LAST=null; // {patientId, transcript, mentioned, flags, consultId}
+function renderFlags(flags,withFb,consultId){
+ if(!flags.length)return '<div class="card"><p class="muted">✅ Koi flag nahi — current data me koi red/amber issue nahi mila.</p></div>';
+ return flags.map((f,i)=>{
+  const cls=f.sev==="red"?"red":f.sev==="amber"?"amber":"info";
+  const badge=f.sev==="red"?'<span class="badge b-red">⛔ DO NOT GIVE</span>'
+   :f.sev==="amber"?'<span class="badge b-amber">⚠️ CAUTION</span>'
+   :'<span class="badge b-info">ℹ️ NOTE</span>';
+  const drugs=(f.drugs||[]).map(d=>`<span class="drugchip" style="background:#e8f5e9;color:#1b5e20;border-radius:14px;padding:3px 10px;font-size:.82rem;margin:2px;display:inline-block">${esc(d)}</span>`).join(" ");
+  return `<div class="flag ${cls}" id="flag-${i}">
+   <h4>${badge} ${esc(f.title.replace(/^⛔ DO NOT GIVE: |^⚠️ CAUTION: |^ℹ️ /,""))}</h4>
+   <p>${esc(f.reason)}</p>
+   ${drugs?`<div>${drugs}</div>`:""}
+   <div class="src">Deterministic engine · verify with Lexicomp/Medscape</div>
+   <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+    ${(f.drugs||[]).slice(0,2).map(d=>`<button class="btn sm ghost" onclick="fdaLabel('${esc(d)}',${i})">📄 Live FDA label</button>`).join("")}
+   </div><div id="fdabox-${i}"></div>
+   ${f.sev!=="info"?`<label class="confirm"><input type="checkbox" data-fi="${i}" onchange="confirmAnalyze()"> <span>Doctor/pharmacist se confirm kiya <b class="pend-badge" style="color:#b26a00">PENDING</b></span></label>`:""}
+   ${withFb&&consultId?`<div class="fbrow">Hospital test: ye flag sahi tha?
+    <button onclick="sendFb(${consultId},'${f.key.replace(/'/g,"")}','correct',${i})" id="fby-${i}">👍 sahi</button>
+    <button onclick="sendFb(${consultId},'${f.key.replace(/'/g,"")}','incorrect',${i})" id="fbn-${i}">👎 ghalat</button>
+    <span class="muted" id="fbm-${i}"></span></div>`:""}
+  </div>`;}).join("");
+}
+function confirmAnalyze(){
+ const boxes=document.querySelectorAll('#analysis input[data-fi]');
+ let pend=0;
+ boxes.forEach(b=>{
+  const lbl=b.closest(".confirm").querySelector(".pend-badge");
+  if(b.checked){lbl.textContent="CONFIRMED";lbl.style.color="#2e7d32";}
+  else{lbl.textContent="PENDING";lbl.style.color="#b26a00";pend++;}
+ });
+ const c=$("pend-count");if(c)c.textContent=pend;
+}
+async function analyze(){
+ const pid=parseInt($("c-patient").value);
+ if(!pid){alert("Pehle patient select karo.");return;}
+ const tx=$("transcript").value.trim();
+ if(tx.length<5){alert("Transcript khaali hai.");return;}
+ $("analysis").innerHTML='<div class="card"><p class="muted">Analyzing…</p></div>';
+ const r=await post("/analyze",{patient_id:pid,transcript:tx});
+ if(!r.ok){$("analysis").innerHTML='<div class="card"><p>Error: '+esc(r.error)+'</p></div>';return;}
+ LAST={patientId:pid,transcript:tx,mentioned:r.mentioned,flags:r.flags.map(f=>({...f,confirmed:false})),consultId:null};
+ const reds=r.flags.filter(f=>f.sev==="red").length,amb=r.flags.filter(f=>f.sev==="amber").length;
+ $("analysis").innerHTML=`<div class="card"><h3>Results — <span class="badge b-red">${reds} red</span> <span class="badge b-amber">${amb} amber</span> <span class="muted" id="pend-count-wrap">Pending confirmations: <b id="pend-count">${r.flags.filter(f=>f.sev!=="info").length}</b></span></h3>
+ <p class="muted">Mentioned: ${(r.mentioned||[]).map(m=>esc(m.label)).join(", ")||"—"}</p>
+ <div><button class="btn sm" onclick="saveConsult()">💾 Save consultation</button></div></div>`
+ +renderFlags(LAST.flags,false);
+ confirmAnalyze();
+}
+async function saveConsult(){
+ if(!LAST){alert("Pehle Analyze karo.");return;}
+ document.querySelectorAll('#analysis input[data-fi]').forEach(b=>{
+  LAST.flags[parseInt(b.dataset.fi)].confirmed=b.checked;});
+ const r=await post("/consultations",{patient_id:LAST.patientId,transcript:LAST.transcript,flags:LAST.flags});
+ if(!r.ok){alert("Error: "+r.error);return;}
+ LAST.consultId=r.id;
+ $("analysis").innerHTML+=`<div class="card"><p class="muted">💾 Saved (id ${r.id}). Neeche har flag par 👍/👎 dabao — ye hospital test ka validation data banega.</p></div>`
+  +renderFlags(LAST.flags,true,r.id);
+}
+async function sendFb(cid,key,verdict,i){
+ const r=await post("/feedback",{consultation_id:cid,flag_key:key,verdict});
+ if(r.ok){
+  $("fbm-"+i).textContent=verdict==="correct"?"✓ recorded":"✓ recorded — shukriya";
+  $("fby-"+i).classList.toggle("on-y",verdict==="correct");
+  $("fbn-"+i).classList.toggle("on-n",verdict==="incorrect");
+ }
+}
+async function fdaLabel(drug,i){
+ const box=$("fdabox-"+i);box.innerHTML='<p class="muted">Loading live FDA label…</p>';
+ const r=await get("/label?name="+encodeURIComponent(drug));
+ if(!r.ok){box.innerHTML='<p class="muted">No label: '+esc(r.error||"")+'</p>';return;}
+ box.innerHTML=`<div class="card" style="background:#f5f9ff"><h4>📄 ${esc(r.generic_name||drug)} — live FDA label</h4>
+ ${r.brand_name&&r.brand_name.length?`<p class="kv"><b>Brands:</b> ${r.brand_name.map(esc).join(", ")}</p>`:""}
+ ${r.boxed_warning?`<p class="kv"><b>⚠️ Boxed warning:</b> ${esc(r.boxed_warning)}</p>`:""}
+ ${r.contraindications?`<p class="kv"><b>Contraindications:</b> ${esc(r.contraindications)}</p>`:""}
+ ${r.drug_interactions?`<p class="kv"><b>Interactions:</b> ${esc(r.drug_interactions)}</p>`:""}
+ ${r.warnings?`<p class="kv"><b>Warnings:</b> ${esc(r.warnings)}</p>`:""}
+ <div class="src">${esc(r.source)}</div></div>`;
+}
+async function lookupDrug(){
+ const n=$("lu-name").value.trim();if(n.length<2)return;
+ $("lu-out").textContent="…";
+ const r=await get("/rxcui?name="+encodeURIComponent(n));
+ $("lu-out").textContent=r.ok?(r.rxcui?`✅ ${n} verified — RxCUI ${r.rxcui}`:`⚠️ ${n}: RxCUI nahi mila`):"Error.";
+}
+function loadDemo(){
+ const tx="62-year-old male, hypertension and chronic kidney disease, currently on lisinopril and warfarin. Complains of knee pain — consider ibuprofen. Also consider spironolactone for blood pressure and amoxicillin for a chest infection.";
+ $("transcript").value=tx;
+ if(!PATIENTS.length){alert("Pehle ek patient banao (dashboard → + New patient).");return;}
+}
+
+/* ================= MIC ================= */
+let rec=null,recOn=false;
+function toggleRec(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){alert("Browser mic support nahi karta — transcript paste karo.");return;}
+ if(recOn){rec.stop();return;}
+ rec=new SR();rec.lang="en-PK";rec.interimResults=true;rec.continuous=true;
+ rec.onresult=e=>{let t="";for(const r of e.results)t+=r[0].transcript+" ";
+  $("transcript").value=( $("transcript").value+" "+t).trim();};
+ rec.onend=()=>{recOn=false;$("rec-btn").textContent="● Start recording";$("recbox").classList.remove("live");};
+ rec.start();recOn=true;$("rec-btn").textContent="■ Stop";$("recbox").classList.add("live");
+}
+
+/* ================= DOSE MODULE ================= */
+let DOSE_DRUGS=[], DOSE_LOADED=false;
+async function loadDoseDrugs(){
+ if(DOSE_LOADED)return;
+ try{
+  const r=await get("/dose/drugs");
+  if(!r.ok){$("dose-out").innerHTML='<div class="card"><p class="muted">Dose rules failed to load: '+esc(r.error||"")+'</p></div>';return;}
+  DOSE_DRUGS=r.drugs||[];DOSE_LOADED=true;
+  $("d-drug").innerHTML=DOSE_DRUGS.map(d=>`<option value="${d.id}">${esc(d.display)}${d.nti?" ⛔":""} <span style="color:#888">(${esc(d.class||"")})</span></option>`).join("");
+  $("d-drug").onchange=doseIndication;
+  doseIndication();
+  $("dose-out").innerHTML='<div class="card"><p class="muted">'+DOSE_DRUGS.length+' drugs with structured renal/hepatic rules. Anything else → type the name below for live FDA label text.</p></div>';
+ }catch(e){$("dose-out").innerHTML='<div class="card"><p class="muted">Network error loading dose rules.</p></div>';}
+}
+function doseIndication(){
+ const d=DOSE_DRUGS.find(x=>x.id===$("d-drug").value);
+ const inds=d?(d.indications||[]):[];
+ if(inds.length){
+  $("d-ind-wrap").classList.remove("hidden");
+  $("d-ind").innerHTML=inds.map(i=>`<option>${esc(i)}</option>`).join("");
+ }else{$("d-ind-wrap").classList.add("hidden");}
+}
+function toggleDoseFree(e){e.preventDefault();
+ $("d-freename-wrap").classList.toggle("hidden");
+ $("d-free-toggle").textContent=$("d-freename-wrap").classList.contains("hidden")?"Drug not in the list? Use any drug name →":"← Back to structured list";
+}
+async function doseCalc(){
+ const freeName=$("d-freename-wrap").classList.contains("hidden")?"":$("d-freename").value.trim();
+ if(freeName){doseFallback(freeName);return;}
+ const body={
+  drug_id:$("d-drug").value,
+  indication:$("d-ind-wrap").classList.contains("hidden")?"":$("d-ind").value,
+  age:parseFloat($("d-age").value), sex:$("d-sex").value,
+  weight_kg:parseFloat($("d-wt").value), height_cm:parseFloat($("d-ht").value)||0,
+  scr_mgdl:parseFloat($("d-scr").value), gfr_method:$("d-gfr").value,
+  on_dialysis:$("d-dialysis").checked, pregnant:$("d-preg").checked,
+ };
+ if($("d-cp-bili").value!==""){
+  body.cp_bilirubin=parseFloat($("d-cp-bili").value);
+  body.cp_albumin=parseFloat($("d-cp-alb").value)||3.5;
+  body.cp_inr=parseFloat($("d-cp-inr").value)||1.0;
+  body.cp_ascites=parseInt($("d-cp-asc").value)||1;
+  body.cp_encephalopathy=parseInt($("d-cp-enc").value)||1;
+ }
+ if(!body.age||!body.weight_kg||!body.scr_mgdl){alert("Age, weight aur serum creatinine zaroori hain.");return;}
+ $("dose-out").innerHTML='<div class="card"><p class="muted">Calculating…</p></div>';
+ let r;
+ try{r=await post("/dose/calc",body);}
+ catch(e){$("dose-out").innerHTML='<div class="card"><p class="muted">Network error.</p></div>';return;}
+ if(r.fallback){doseFallback(freeName||body.drug_id);return;}
+ if(!r.ok){$("dose-out").innerHTML='<div class="card"><p>Error: '+esc(r.error||"")+'</p></div>';return;}
+ const warnHtml=(r.warnings||[]).map(w=>{
+  const cls=w.startsWith("⛔")?"red":(w.startsWith("⚠️")||w.startsWith("🩸")||w.startsWith("👴")||w.startsWith("🤰")||w.startsWith("🧒"))?"amber":"info";
+  return `<div class="flag ${cls}"><h4>${esc(w.split("—")[0].split(":")[0])}</h4><p>${esc(w)}</p></div>`;
+ }).join("");
+ $("dose-out").innerHTML=`
+ <div class="card" style="border:2px solid var(--teal)">
+  <h3>💊 ${esc(r.drug.display)} ${r.drug.nti?'<span class="badge b-red">NARROW INDEX</span>':""}</h3>
+  <p class="kv"><b>${esc(r.gfr_label)}</b> · dosing weight ${r.dosing_weight_kg} kg</p>
+  ${(r.dose||[]).map(d=>`<p style="font-size:1.05rem"><b>➡️ ${esc(d)}</b></p>`).join("")}
+ </div>
+ ${warnHtml}
+ <div class="card"><h3>🧠 Reasoning (step-by-step)</h3>
+  <ol>${(r.reasoning||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+  <div class="src">Sources: ${(r.sources||[]).map(esc).join(" · ")}</div>
+  <p class="muted" style="margin-top:8px">⚠️ ${esc(r.disclaimer)}</p>
+ </div>`;
+ $("dose-out").scrollIntoView();
+}
+async function doseFallback(name){
+ if(name.length<2){alert("Drug ka naam likho.");return;}
+ $("dose-out").innerHTML='<div class="card"><p class="muted">Loading live FDA label…</p></div>';
+ let r;
+ try{r=await get("/dose/label?name="+encodeURIComponent(name));}
+ catch(e){$("dose-out").innerHTML='<div class="card"><p class="muted">Network error.</p></div>';return;}
+ if(!r.ok){$("dose-out").innerHTML='<div class="card"><p>No FDA label: '+esc(r.error||"")+'</p></div>';return;}
+ $("dose-out").innerHTML=`
+ <div class="card" style="border:2px solid var(--amber);background:var(--amber-bg)">
+  <h3>📄 ${esc(r.generic_name||name)} <span class="badge b-amber">FALLBACK</span></h3>
+  <p><b>${esc(r.banner)}</b></p>
+  ${r.brand_name&&r.brand_name.length?`<p class="kv"><b>Brands:</b> ${r.brand_name.map(esc).join(", ")}</p>`:""}
+ </div>
+ <div class="card"><h3>Official FDA label — Dosage and Administration</h3>
+  <p style="white-space:pre-wrap;font-size:.88rem">${esc(r.dosage_text||"No dosage section in this label.")}</p>
+  <div class="src">${esc(r.source)}</div>
+  <p class="muted" style="margin-top:8px">⚠️ Educational reference — NOT medical advice. Verify with Lexicomp/Medscape and a doctor/pharmacist.</p>
+ </div>`;
+}
+
+/* ================= HISTORY ================= */
+async function renderHistory(){
+ const pid=$("h-patient").value;
+ const r=await get("/consultations"+(pid?"?patient_id="+pid:""));
+ const list=r.consultations||[];
+ const pmap={};PATIENTS.forEach(p=>pmap[p.id]=p.name);
+ $("hist-list").innerHTML=list.length?list.map(c=>{
+  const reds=(c.flags||[]).filter(f=>f.sev==="red").length;
+  return `<div class="card"><b>${esc(c.patient_name||pmap[c.patient_id]||("Patient "+c.patient_id))}</b>
+  <span class="muted">${new Date(c.created_at*1000).toLocaleString()} · by ${esc(c.by_name||"")}</span>
+  <div><span class="badge b-red">${reds} red</span> <span class="badge b-info">${(c.flags||[]).length} flags</span></div></div>`;
+ }).join(""):'<p class="muted">No saved consultations.</p>';
+}
+
+/* ================= ADMIN ================= */
+async function renderAdmin(){
+ const u=await get("/admin/users");
+ $("user-list").innerHTML=(u.users||[]).map(x=>`<div class="prow" style="margin:6px 0">
+ <span><b>${esc(x.name)}</b> <span class="muted">${esc(x.email)} · ${x.role} · ${x.is_active?"active":"disabled"}</span></span>
+ ${x.id!==ME.id?`<button class="btn sm ghost" onclick="toggleUser(${x.id},${x.is_active?0:1})">${x.is_active?"Disable":"Enable"}</button>`:""}</div>`).join("");
+ const a=await get("/admin/audit?limit=60");
+ $("chain-st").textContent=a.chain_ok?"· ⛓️ chain intact":"· ⚠️ CHAIN BROKEN";
+ $("audit-list").innerHTML=`<table><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr>`+
+  (a.entries||[]).map(e=>`<tr><td>${new Date(e.ts*1000).toLocaleString()}</td><td>${esc(e.user_name)}</td><td>${esc(e.action)}</td><td>${esc(e.entity)} ${esc(e.entity_id)}</td><td>${esc(e.details||"")}</td></tr>`).join("")+"</table>";
+ const f=await get("/feedback/stats");
+ const s=f.stats||{};
+ $("fb-stats").innerHTML=`👍 correct: <b>${s.correct||0}</b> · 👎 incorrect: <b>${s.incorrect||0}</b> · unsure: <b>${s.unsure||0}</b>`;
+}
+async function createUser(){
+ const r=await post("/admin/users",{name:$("u-name").value,email:$("u-email").value,password:$("u-pass").value,role:$("u-role").value});
+ if(!r.ok){alert("Error: "+r.error);return;}
+ $("u-name").value=$("u-email").value=$("u-pass").value="";renderAdmin();
+}
+async function toggleUser(id,active){
+ const r=await post("/admin/users/"+id+"/active",{active:!!active});
+ if(r.ok)renderAdmin();else alert("Error: "+r.error);
+}
+async function dlBackup(){
+ const r=await get("/admin/backup");
+ if(!r.ok){alert("Error");return;}
+ const blob=new Blob([JSON.stringify(r.backup)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ a.download="mediscribe-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();
+}
+async function doRestore(){
+ const f=$("restore-file").files[0];if(!f)return;
+ if(!confirm("Restore karein? Current data replace ho jayega."))return;
+ try{
+  const backup=JSON.parse(await f.text());
+  const r=await post("/admin/restore",{backup});
+  $("restore-msg").textContent=r.ok?"✅ Restore ho gaya.":"Error: "+r.error;
+  if(r.ok)renderAdmin();
+ }catch(e){$("restore-msg").textContent="Invalid backup file.";}
+}
+
+/* ================= AI CHAT ================= */
+function saveAiKey(){try{localStorage.setItem("mediscribe_gemini_key",$("ai-key").value.trim());}catch(e){}}
+function aiBubble(who,text){
+ const d=document.createElement("div");
+ d.style.cssText="margin:6px 0;padding:8px 10px;border-radius:8px;font-size:.88rem;"+(who==="u"?"background:#e8f0fe;text-align:right":"background:#f1f1f1");
+ d.textContent=(who==="u"?"You: ":"AI: ")+text;$("ai-chat").appendChild(d);$("ai-chat").scrollTop=1e6;
+}
+let AIH=[];
+async function aiAsk(){
+ const key=$("ai-key").value.trim();
+ if(!key){alert("Pehle Gemini API key dalo.");return;}
+ const q=$("ai-in").value.trim();if(!q)return;
+ $("ai-in").value="";aiBubble("u",q);AIH.push({role:"user",text:q});
+ let ctx="";
+ if(LAST)ctx="Patient flags from deterministic engine:\n"+LAST.flags.map(f=>`- [${f.sev}] ${f.title}: ${f.reason}`).join("\n");
+ const sys="You are a pharmacy study assistant inside MediScribe (research prototype, NOT medical advice). Explain ONLY the engine flags given below; never invent new drug decisions. Every reply must end with: '⚠️ Doctor/pharmacist se verify karo — Lexicomp/Medscape check karo.'\n"+ctx;
+ aiBubble("a","…");
+ try{
+  const r=await post("/chat",{api_key:key,model:"gemini-flash-latest",system:sys,messages:AIH.slice(-10)});
+  $("ai-chat").lastChild.remove();
+  if(!r.ok){aiBubble("a","Error: "+r.error);return;}
+  AIH.push({role:"model",text:r.text});aiBubble("a",r.text);
+ }catch(e){$("ai-chat").lastChild.remove();aiBubble("a","Network error.");}
+}
+document.addEventListener("DOMContentLoaded",boot);
+if("serviceWorker" in navigator){navigator.serviceWorker.register("/mediscribe/sw.js").catch(()=>{});}
+</script>
+</body>
+</html>

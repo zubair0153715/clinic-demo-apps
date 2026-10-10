@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pearl Smile Dental — AI Receptionist Demo</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
+  body { background:#0b141a; display:flex; flex-direction:column; align-items:center; min-height:100vh; color:#e9edef; }
+  .demo-note { max-width:480px; padding:14px 18px 6px; font-size:13px; color:#8696a0; text-align:center; }
+  .demo-note b { color:#00a884; }
+  .phone { width:100%; max-width:430px; height:min(780px, calc(100vh - 90px)); background:#0b141a; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; margin:8px; box-shadow:0 8px 40px rgba(0,0,0,.5); }
+  .wa-header { background:#1f2c34; padding:10px 14px; display:flex; align-items:center; gap:12px; }
+  .avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,#00a884,#008069); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .wa-header .name { font-size:16px; font-weight:500; }
+  .wa-header .status { font-size:12px; color:#00a884; }
+  .online-dot { width:8px; height:8px; border-radius:50%; background:#00a884; display:inline-block; margin-right:4px; }
+  .chat { flex:1; overflow-y:auto; padding:16px 12px; background:#0b141a; background-image:radial-gradient(rgba(255,255,255,.02) 1px, transparent 1px); background-size:18px 18px; display:flex; flex-direction:column; gap:8px; }
+  .msg { max-width:80%; padding:8px 12px; border-radius:10px; font-size:14.5px; line-height:1.45; animation:pop .25s ease; word-wrap:break-word; }
+  @keyframes pop { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:none;} }
+  .msg.bot { background:#1f2c34; align-self:flex-start; border-top-left-radius:2px; }
+  .msg.user { background:#005c4b; align-self:flex-end; border-top-right-radius:2px; }
+  .msg .time { display:block; font-size:10.5px; color:#8696a0; text-align:right; margin-top:4px; }
+  .typing { background:#1f2c34; align-self:flex-start; border-radius:10px; border-top-left-radius:2px; padding:12px 16px; display:flex; gap:5px; }
+  .typing span { width:7px; height:7px; border-radius:50%; background:#8696a0; animation:blink 1.2s infinite; }
+  .typing span:nth-child(2){ animation-delay:.2s } .typing span:nth-child(3){ animation-delay:.4s }
+  @keyframes blink { 0%,60%,100%{opacity:.3} 30%{opacity:1} }
+  .quick { display:flex; gap:8px; padding:8px 12px; flex-wrap:wrap; background:#0b141a; }
+  .quick button { background:transparent; border:1px solid #00a884; color:#00a884; border-radius:20px; padding:7px 14px; font-size:13.5px; cursor:pointer; }
+  .quick button:active { background:#00a884; color:#fff; }
+  .inputbar { display:flex; gap:8px; padding:10px 12px; background:#1f2c34; align-items:center; }
+  .inputbar input { flex:1; background:#2a3942; border:none; border-radius:22px; padding:11px 16px; color:#e9edef; font-size:15px; outline:none; }
+  .inputbar button { width:44px; height:44px; border-radius:50%; border:none; background:#00a884; color:#fff; font-size:18px; cursor:pointer; flex-shrink:0; }
+  .book-card { background:#1f2c34; border:1px solid #00a88455; border-radius:10px; padding:12px; align-self:flex-start; max-width:85%; font-size:14px; }
+  .book-card h4 { color:#00a884; margin-bottom:8px; font-size:14px; }
+  .book-card .row { display:flex; justify-content:space-between; padding:3px 0; }
+  .book-card .row span:first-child { color:#8696a0; }
+  .book-card .ok { margin-top:8px; color:#00a884; font-weight:600; }
+  .cta { max-width:480px; padding:10px 18px 20px; text-align:center; font-size:13px; color:#8696a0; }
+  .cta a { color:#00a884; font-weight:600; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="demo-note"><b>● LIVE DEMO</b> — This is how a 24/7 AI receptionist answers your clinic's WhatsApp. Try it: ask about prices, timings, or book an appointment.</div>
+<div class="phone">
+  <div class="wa-header">
+    <div class="avatar">🦷</div>
+    <div><div class="name">Pearl Smile Dental Clinic</div><div class="status"><span class="online-dot"></span>online · replies instantly</div></div>
+  </div>
+  <div class="chat" id="chat"></div>
+  <div class="quick" id="quick"></div>
+  <div class="inputbar">
+    <input id="inp" type="text" placeholder="Message" autocomplete="off">
+    <button id="send">➤</button>
+  </div>
+</div>
+<div class="cta">Demo by <b>Zubair's AI Automation Agency</b> — we build this for your clinic. <a href="#" onclick="return false">Get a free 10-min demo →</a></div>
+
+<script>
+const chat = document.getElementById('chat');
+const quickBox = document.getElementById('quick');
+const inp = document.getElementById('inp');
+let step = 'idle';           // booking state machine
+let booking = {};
+
+function time(){ const d=new Date(); let h=d.getHours(), m=String(d.getMinutes()).padStart(2,'0'); const ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+m+' '+ap; }
+function addMsg(text, who){
+  const div=document.createElement('div');
+  div.className='msg '+who;
+  div.innerHTML=text+'<span class="time">'+time()+'</span>';
+  chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+}
+function showTyping(cb, ms){
+  const t=document.createElement('div'); t.className='typing'; t.id='typing';
+  t.innerHTML='<span></span><span></span><span></span>';
+  chat.appendChild(t); chat.scrollTop=chat.scrollHeight;
+  setTimeout(()=>{ t.remove(); cb(); }, ms||900+Math.random()*700);
+}
+function botSay(text){ showTyping(()=>addMsg(text,'bot')); }
+function setQuick(labels){
+  quickBox.innerHTML='';
+  labels.forEach(l=>{ const b=document.createElement('button'); b.textContent=l;
+    b.onclick=()=>{ sendUser(l); }; quickBox.appendChild(b); });
+}
+function sendUser(text){
+  if(!text.trim()) return;
+  addMsg(text.replace(/</g,'&lt;'),'user'); inp.value='';
+  handle(text.trim());
+}
+
+const PRICES = { cleaning:'AED 350', whitening:'AED 1,200', braces:'from AED 9,000', implant:'from AED 3,500 per implant', 'root canal':'from AED 1,500', filling:'from AED 400', checkup:'FREE (this month)' };
+
+function handle(raw){
+  const t = raw.toLowerCase();
+
+  // ---- booking flow ----
+  if(step==='ask_name'){ booking.name=raw; step='ask_treatment';
+    botSay('Nice to meet you, '+esc(raw)+'! 😊 Which treatment do you need?');
+    setQuick(['Cleaning','Whitening','Braces','Implant','Checkup']); return; }
+  if(step==='ask_treatment'){ booking.treatment=raw; step='ask_day';
+    botSay('Got it — <b>'+esc(raw)+'</b>. Which day suits you?');
+    setQuick(['Today','Tomorrow','Saturday','Sunday']); return; }
+  if(step==='ask_day'){ booking.day=raw; step='ask_time';
+    botSay('And what time on <b>'+esc(raw)+'</b>?');
+    setQuick(['10:00 AM','2:00 PM','5:30 PM','7:00 PM']); return; }
+  if(step==='ask_time'){ booking.time=raw; step='idle';
+    showTyping(()=>{
+      const card=document.createElement('div'); card.className='book-card';
+      card.innerHTML='<h4>✅ Appointment Confirmed</h4>'+
+        '<div class="row"><span>Patient</span><b>'+esc(booking.name)+'</b></div>'+
+        '<div class="row"><span>Treatment</span><b>'+esc(booking.treatment)+'</b></div>'+
+        '<div class="row"><span>Day</span><b>'+esc(booking.day)+'</b></div>'+
+        '<div class="row"><span>Time</span><b>'+esc(booking.time)+'</b></div>'+
+        '<div class="row"><span>Clinic</span><b>Pearl Smile, JLT Dubai</b></div>'+
+        '<div class="ok">Reminder will be sent 24h before. See you soon! 🦷</div>';
+      chat.appendChild(card); chat.scrollTop=chat.scrollHeight;
+      setQuick(['Book another','Talk to human','Timings']);
+    },1200); return; }
+
+  // ---- intents ----
+  if(/(book|appointment|schedule|visit)/.test(t)){
+    step='ask_name'; botSay('Of course! I can book you in right now 📅<br>What is your <b>name</b>?'); setQuick([]); return; }
+  if(/(price|cost|much|charge|fee|aed)/.test(t)){
+    let found=false, html='Here are our prices:<br><br>';
+    for(const k in PRICES){ if(t.includes(k)){ html+='• <b>'+cap(k)+'</b>: '+PRICES[k]+'<br>'; found=true; } }
+    if(!found){ for(const k in PRICES){ html+='• <b>'+cap(k)+'</b>: '+PRICES[k]+'<br>'; } }
+    html+='<br>Want me to book you in?';
+    botSay(html); setQuick(['Book appointment','Braces price','Whitening price']); return; }
+  if(/(timing|timings|open|hours|when.*open|close)/.test(t)){
+    botSay('We are open:<br>• <b>Mon–Sat:</b> 9:00 AM – 9:00 PM<br>• <b>Sunday:</b> 10:00 AM – 6:00 PM<br>📍 Cluster T, JLT, Dubai'); setQuick(['Book appointment','Location']); return; }
+  if(/(where|location|address|direction|map|parking)/.test(t)){
+    botSay('📍 <b>Pearl Smile Dental Clinic</b><br>Office 1402, Cluster T, Jumeirah Lake Towers, Dubai.<br>Free parking in the building basement.'); setQuick(['Book appointment','Timings']); return; }
+  if(/(human|staff|receptionist|call me|phone|number|real person)/.test(t)){
+    botSay('Of course — our front desk will call you within 15 minutes during working hours. 📞<br>Or reach us directly: <b>+971 4 123 4567</b>'); setQuick(['Book appointment']); return; }
+  if(/(insurance|dha|damana|axa)/.test(t)){
+    botSay('Yes, we accept most major insurers — Daman, AXA, DHA-network and more. Share your insurance name and I will confirm coverage for your treatment.'); setQuick(['Book appointment']); return; }
+  if(/(pain|emergency|hurt|urgent|ache)/.test(t)){
+    botSay('I\'m sorry to hear that! 😟 We keep <b>same-day emergency slots</b> every day. Shall I book you in today?'); setQuick(['Book appointment','Talk to human']); return; }
+  if(/(hi|hello|salam|hey|good morning|good evening)\b/.test(t) && t.length<25){
+    botSay('Hello! 👋 Welcome to <b>Pearl Smile Dental Clinic</b>, Dubai.<br>I\'m Sara, the AI receptionist. I can share prices, timings, or <b>book your appointment</b> right here.'); setQuick(['Book appointment','Prices','Timings']); return; }
+  if(/(thank|shukran|thanks)/.test(t)){
+    botSay('You\'re very welcome! 😊 Anything else I can help with?'); setQuick(['Book appointment','Prices']); return; }
+
+  // fallback
+  botSay('I can help with <b>appointments</b>, <b>prices</b>, <b>timings</b>, <b>location</b> and <b>insurance</b> — or connect you to our front desk. What do you need?');
+  setQuick(['Book appointment','Prices','Timings','Talk to human']);
+}
+function esc(s){ return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+document.getElementById('send').onclick=()=>sendUser(inp.value);
+inp.addEventListener('keydown',e=>{ if(e.key==='Enter') sendUser(inp.value); });
+
+// greeting
+setTimeout(()=>botSay('Hello! 👋 Welcome to <b>Pearl Smile Dental Clinic</b>, Dubai.<br>I\'m Sara, the AI receptionist — I reply instantly, 24/7. How can I help?'),600);
+setTimeout(()=>setQuick(['Book appointment','Prices','Timings']),1600);
+</script>
+</body>
+</html>

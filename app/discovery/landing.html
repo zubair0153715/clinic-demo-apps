@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LeadForge AI — Drug Discovery Workbench</title>
+<style>
+:root{--bg:#0b1220;--card:#111c33;--line:#22314f;--txt:#e8eefc;--mut:#93a4c4;--acc:#38e1c6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:24px}
+.hero{text-align:center;padding:40px 10px 20px}
+.hero h1{font-size:34px;margin:10px 0}.hero p{color:var(--mut);max-width:640px;margin:0 auto;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:13px}
+.feat b{display:block;margin-bottom:6px;font-size:14px}.feat span{color:var(--mut);line-height:1.5}
+.auth{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+.card h2{margin:0 0 12px;font-size:18px}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px}
+input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#0a1120;color:var(--txt);font-size:14px}
+button{background:var(--acc);color:#04211c;border:0;border-radius:9px;padding:11px 20px;font-weight:700;font-size:14px;cursor:pointer;margin-top:14px;width:100%}
+.err{color:#ff6b6b;font-size:13px;margin-top:8px;min-height:18px}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;font-size:13px}
+.plan b{font-size:16px}.plan .pr{font-size:22px;font-weight:800;margin:8px 0;color:var(--acc)}
+.plan ul{margin:8px 0;padding-left:18px;color:var(--mut);line-height:1.7}
+.note{font-size:12px;color:var(--mut);text-align:center;margin:26px 0;line-height:1.7}
+@media(max-width:760px){.grid,.auth,.plans{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero">
+<div style="font-size:44px">🧬</div>
+<h1>LeadForge AI</h1>
+<p>The computational front-end of drug discovery. Point it at a disease target — it pulls live data
+from UniProt, ChEMBL and PubChem, screens compounds with real cheminformatics, and hands your lab
+a <b>ranked synthesis shortlist</b> with drug-likeness and toxicity triage. What your lab synthesizes
+and tests is still the real discovery — LeadForge tells you <b>where to start</b>.</p>
+</div>
+
+<div class="grid">
+<div class="feat"><b>🎯 Target → ligands</b><span>UniProt target ID mapped to ChEMBL bioactivities — every known active with measured pChEMBL values.</span></div>
+<div class="feat"><b>🔬 Virtual screening</b><span>RDKit Morgan fingerprints + Tanimoto similarity against known actives. Your query compound ranked with them.</span></div>
+<div class="feat"><b>🛡️ Safety triage</b><span>Lipinski/Veber drug-likeness, PAINS structural alerts, and ToxGuard Tox21 read-across across 12 toxicity assays.</span></div>
+</div>
+
+<div class="auth">
+<div class="card"><h2>Create lab account</h2>
+<label>Name</label><input id="s-name" placeholder="Dr. Ayesha Khan">
+<label>Email</label><input id="s-email" type="email" placeholder="you@lab.org">
+<label>Password (min 8)</label><input id="s-pass" type="password">
+<button onclick="signup()">Create account</button><div class="err" id="s-err"></div>
+<div style="font-size:12px;color:var(--mut)">First account becomes the lab admin.</div></div>
+<div class="card"><h2>Sign in</h2>
+<label>Email</label><input id="l-email" type="email">
+<label>Password</label><input id="l-pass" type="password">
+<button onclick="login()">Sign in</button><div class="err" id="l-err"></div></div>
+</div>
+
+<div class="plans">
+<div class="plan"><b>Free</b><div class="pr">$0</div><ul><li>5 pipeline runs / month</li><li>Full ADMET + tox panel</li><li>Run history</li></ul></div>
+<div class="plan" style="border-color:var(--acc)"><b>Pro</b><div class="pr">$49/mo</div><ul><li>Unlimited runs</li><li>Shareable report links</li><li>Priority for new modules</li></ul></div>
+<div class="plan"><b>Enterprise</b><div class="pr">$199/mo</div><ul><li>Everything in Pro</li><li>Team seats + admin panel</li><li>Onboarding for your lab</li></ul></div>
+</div>
+<p class="note">Billing is manual — message us on WhatsApp after signup and we activate Pro/Enterprise.<br>
+Research tool. Scores are triage heuristics, not efficacy or safety proof. Wet-lab validation required. Never medical advice.</p>
+</div>
+<script>
+async function post(url, body){
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  return r.json();
+}
+async function signup(){
+  const j = await post('api/signup', {name: document.getElementById('s-name').value, email: document.getElementById('s-email').value, password: document.getElementById('s-pass').value});
+  if(j.ok) location.href = '/discovery';
+  else document.getElementById('s-err').textContent = j.error;
+}
+async function login(){
+  const j = await post('api/login', {email: document.getElementById('l-email').value, password: document.getElementById('l-pass').value});
+  if(j.ok) location.href = '/discovery';
+  else document.getElementById('l-err').textContent = j.error;
+}
+</script>
+</body>
+</html>

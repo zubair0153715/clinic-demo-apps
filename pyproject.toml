@@ -1,0 +1,16 @@
+[project]
+name = "clinic-demo"
+version = "0.1.0"
+description = "Live demo: 24/7 AI receptionist for clinics (WhatsApp-style)"
+requires-python = ">=3.12"
+dependencies = ["fastapi[standard]>=0.115", "pypdf>=4", "rdkit>=2024.3.1"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.fastapi-cloud]
+python_version = "3.12"

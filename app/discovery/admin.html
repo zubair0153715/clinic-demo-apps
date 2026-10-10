@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LeadForge — Admin</title>
+<style>
+:root{--bg:#0b1220;--card:#111c33;--line:#22314f;--txt:#e8eefc;--mut:#93a4c4;--acc:#38e1c6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--mut);font-size:12px}
+button{background:var(--acc);color:#04211c;border:0;border-radius:7px;padding:5px 12px;font-weight:700;font-size:12px;cursor:pointer;margin:1px}
+button.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+select{background:#0a1120;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px}
+h2{font-size:17px;margin:0 0 10px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button.ghost.on{background:var(--acc);color:#04211c}
+.mono{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🧬 LeadForge — Admin</h1>
+<div class="tabs">
+<button class="ghost on" onclick="tab('users',this)">Users</button>
+<button class="ghost" onclick="tab('runs',this)">Runs</button>
+<button class="ghost" onclick="tab('audit',this)">Audit</button>
+<button class="ghost" onclick="location.href='/discovery'">← Workbench</button>
+</div>
+<div class="card"><div id="out">Loading…</div></div>
+</div>
+<script>
+let users = [];
+function tab(name, btn){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ({users: showUsers, runs: showRuns, audit: showAudit})[name]();
+}
+async function showUsers(){
+  const j = await (await fetch('api/admin/users')).json();
+  users = j.users;
+  document.getElementById('out').innerHTML =
+   `<h2>Users (${users.length})</h2><table><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Runs/mo</th><th>Active</th><th></th></tr>` +
+   users.map(u=>`<tr><td>${u.id}</td><td>${u.name||''}</td><td class="mono">${u.email}</td><td>${u.role}</td>
+    <td><select onchange="setPlan(${u.id},this.value)">${j.plans.map(p=>`<option ${p===u.plan?'selected':''}>${p}</option>`).join('')}</select></td>
+    <td>${u.runs_this_month}</td><td>${u.is_active?'yes':'<b style="color:#ff6b6b">no</b>'}</td>
+    <td><button class="ghost" onclick="setActive(${u.id},${u.is_active?0:1})">${u.is_active?'deactivate':'activate'}</button>
+    <button class="ghost" onclick="makeAdmin(${u.id})">make admin</button>
+    <button class="ghost" onclick="delUser(${u.id},'${u.email}')">delete</button></td></tr>`).join('') + `</table>`;
+}
+async function makeAdmin(id){
+  if(!confirm('Promote user #' + id + ' to admin?')) return;
+  await fetch('api/admin/make-admin', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_id:id})});
+  showUsers();
+}
+async function delUser(id, email){
+  if(!confirm('Delete ' + email + ' and all their runs?')) return;
+  const j = await (await fetch('api/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_id:id})})).json();
+  if(!j.ok) alert(j.error); else showUsers();
+}
+async function setPlan(id, plan){
+  await fetch('api/admin/plan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_id:id, plan})});
+  showUsers();
+}
+async function setActive(id, active){
+  await fetch('api/admin/active', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user_id:id, active})});
+  showUsers();
+}
+async function showRuns(){
+  const j = await (await fetch('api/admin/runs')).json();
+  document.getElementById('out').innerHTML =
+   `<h2>Runs (${j.runs.length})</h2><table><tr><th>ID</th><th>User</th><th>Target</th><th>Query</th><th>Leads</th><th>Top</th><th>Time</th></tr>` +
+   j.runs.map(r=>`<tr><td>${r.id}</td><td class="mono">${r.email}</td><td>${r.target}</td><td class="mono">${(r.query_input||'').slice(0,30)}</td><td>${r.lead_count}</td><td>${r.top_score}</td><td class="mono">${new Date(r.created_at*1000).toLocaleString()}</td></tr>`).join('') + `</table>`;
+}
+async function showAudit(){
+  const j = await (await fetch('api/admin/audit')).json();
+  document.getElementById('out').innerHTML =
+   `<h2>Audit (${j.audit.length})</h2><table><tr><th>ID</th><th>User</th><th>Action</th><th>Detail</th><th>Time</th></tr>` +
+   j.audit.map(a=>`<tr><td>${a.id}</td><td class="mono">${a.email||'—'}</td><td>${a.action}</td><td class="mono">${a.detail||''}</td><td class="mono">${new Date(a.created_at*1000).toLocaleString()}</td></tr>`).join('') + `</table>`;
+}
+showUsers();
+</script>
+</body>
+</html>

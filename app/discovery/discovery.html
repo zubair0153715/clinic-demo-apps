@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LeadForge AI — Workbench</title>
+<style>
+:root{--bg:#0b1220;--card:#111c33;--line:#22314f;--txt:#e8eefc;--mut:#93a4c4;--acc:#38e1c6;--warn:#ffb454;--bad:#ff6b6b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px}
+header{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
+.logo{font-size:30px}.sub{color:var(--mut);font-size:13px}
+.userbox{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:13px;color:var(--mut)}
+.userbox button{width:auto;margin:0;padding:7px 14px;font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+h2{margin:0 0 10px;font-size:17px}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#0a1120;color:var(--txt);font-size:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{background:var(--acc);color:#04211c;border:0;border-radius:9px;padding:12px 22px;font-weight:700;font-size:15px;cursor:pointer;margin-top:14px}
+button:disabled{opacity:.5;cursor:wait}
+button.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc);padding:8px 16px;font-size:13px;margin-top:0}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.step{font-size:12px;padding:6px 10px;border-radius:20px;border:1px solid var(--line);color:var(--mut)}
+.step.ok{border-color:var(--acc);color:var(--acc)}.step.warn{border-color:var(--warn);color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:600;font-size:12px}
+.score{font-weight:800;font-size:16px}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:12px;margin:1px 2px}
+.pill.g{background:#0e3a2f;color:var(--acc)}.pill.r{background:#3a1414;color:var(--bad)}.pill.a{background:#3a2c10;color:var(--warn)}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;color:var(--mut)}
+details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:13px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:13px;margin:8px 0}
+.kv b{color:var(--mut);font-weight:600}
+.note{font-size:12px;color:var(--mut);background:#0a1120;border:1px dashed var(--line);border-radius:8px;padding:10px 12px;margin-top:14px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hist-item{display:flex;gap:10px;align-items:center;font-size:13px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.hist-item:hover{background:#0d1730}
+.hist-item .t{color:var(--mut);font-size:12px;margin-left:auto;white-space:nowrap}
+@media(max-width:700px){.row{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="logo">🧬</div>
+<div><div style="font-size:20px;font-weight:800">LeadForge AI</div>
+<div class="sub">Drug discovery workbench</div></div>
+<div class="userbox"><span id="who"></span><span id="quota"></span><button class="ghost" id="upbtn" onclick="upgrade()" style="display:none">Upgrade</button><button class="ghost" onclick="logout()">Logout</button></div>
+</header>
+
+<div class="card">
+<h2>New discovery run</h2>
+<div class="row">
+<div><label>Target — gene or protein name (e.g. EGFR, BRAF, ACE2)</label>
+<input id="target" placeholder="EGFR"></div>
+<div><label>Query compound — name or SMILES (optional)</label>
+<input id="compound" placeholder="erlotinib  or  SMILES"></div>
+</div>
+<div class="row">
+<div><label>Top similar hits to profile</label>
+<select id="topn"><option>10</option><option selected>25</option><option>40</option></select></div>
+<div><label>&nbsp;</label><div style="font-size:12px;color:var(--mut);padding-top:10px">Empty compound → ranks the target's known actives only.</div></div>
+</div>
+<div style="margin-top:10px;font-size:13px;color:var(--mut)">⚗️ Molecular docking (AutoDock Vina) runs on our lab compute — request it on any run and the docking report arrives by email.</div>
+<button id="run" onclick="run()">▶ Run pipeline</button>
+<span id="status" style="margin-left:12px;font-size:13px;color:var(--mut)"></span>
+</div>
+
+<div class="card">
+<h2>Run history</h2>
+<div id="hist"><div style="color:var(--mut);font-size:13px">Loading…</div></div>
+</div>
+
+<div id="out"></div>
+
+<div class="note">
+<b>Honest scope.</b> LeadForge runs the <i>computational</i> front of drug discovery on real public data.
+It does <b>not</b> do molecular docking, synthesis planning, or clinical prediction — every score is a
+triage heuristic telling your lab <b>which compounds to synthesize and test first</b>. Wet-lab validation
+is the real discovery. Research use only, never medical advice.
+</div>
+</div>
+
+<script>
+let lastResult = null, me = null;
+function looksLikeSMILES(s){ return /[=\#\[\]\(\)@+\-]/.test(s) && s.length > 6; }
+
+async function init(){
+  const r = await fetch('api/me');
+  if(!r.ok){ location.href = '/discovery'; return; }
+  me = await r.json();
+  document.getElementById('who').textContent = me.name + ' · ' + me.plan.toUpperCase();
+  document.getElementById('quota').textContent = me.runs_limit ? `runs ${me.runs_used}/${me.runs_limit}` : 'runs unlimited';
+  if(me.runs_limit) document.getElementById('upbtn').style.display = '';
+  loadHist();
+}
+async function loadHist(){
+  const r = await fetch('api/history');
+  const j = await r.json();
+  const el = document.getElementById('hist');
+  if(!j.runs.length){ el.innerHTML = '<div style="color:var(--mut);font-size:13px">No runs yet.</div>'; return; }
+  el.innerHTML = j.runs.map(x =>
+    `<div class="hist-item" onclick="openRun(${x.id})"><b>#${x.id}</b><span>${x.target}</span><span class="mono">${(x.query_input||'').slice(0,30)}</span><span>${x.lead_count} leads · top ${x.top_score}</span><span class="t">${new Date(x.created_at*1000).toLocaleString()}</span></div>`).join('');
+}
+async function openRun(id){
+  const r = await fetch('api/run/' + id);
+  const j = await r.json();
+  if(j.ok){ lastResult = j.run; render(j.run); window.scrollTo(0, document.getElementById('out').offsetTop); }
+}
+async function run(){
+  const target = document.getElementById('target').value.trim();
+  const comp = document.getElementById('compound').value.trim();
+  if(!target){ alert('Target required'); return; }
+  const btn = document.getElementById('run');
+  btn.disabled = true;
+  document.getElementById('status').innerHTML = '<span class="spin"></span>Running — live data fetch can take 30–90s…';
+  document.getElementById('out').innerHTML = '';
+  const body = { target, top_n: parseInt(document.getElementById('topn').value) };
+  if(comp){ if(looksLikeSMILES(comp)) body.smiles = comp; else body.compound = comp; }
+  try{
+    const r = await fetch('api/run', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const j = await r.json();
+    if(j.error === 'monthly_limit'){
+      document.getElementById('status').innerHTML = `Monthly limit reached. <a href="${j.whatsapp}" target="_blank" style="color:var(--acc)">Upgrade to Pro on WhatsApp</a>`;
+      btn.disabled = false;
+    } else if(j.error === 'login_required'){ location.reload(); }
+    else if(j.job_id){ pollJob(j.job_id, btn); }
+    else { document.getElementById('status').textContent = 'Error: ' + (j.error||'unknown'); btn.disabled = false; }
+  }catch(e){ document.getElementById('status').textContent = 'Network error: ' + e.message; btn.disabled = false; }
+}
+async function pollJob(job_id, btn){
+  const t0 = Date.now();
+  while(true){
+    await new Promise(r => setTimeout(r, 5000));
+    const el = Math.round((Date.now()-t0)/1000);
+    document.getElementById('status').innerHTML = `<span class="spin"></span>Working… ${el}s (target → ligands → screen → ADMET → docking)`;
+    try{
+      const r = await fetch('api/job/' + job_id);
+      const j = await r.json();
+      if(j.status === 'done' || j.status === 'failed'){
+        const res = j.result || {};
+        lastResult = res; render(res); loadHist(); init_quota();
+        document.getElementById('status').textContent = res.ok ? `Done in ${res.elapsed_s}s` : ('Failed: ' + (res.error||'unknown'));
+        btn.disabled = false;
+        return;
+      }
+    }catch(e){ /* keep polling */ }
+    if(el > 1200){ document.getElementById('status').textContent = 'Still running after 20 min — check history later.'; btn.disabled = false; return; }
+  }
+}
+async function init_quota(){
+  const r = await fetch('api/me'); me = await r.json();
+  document.getElementById('quota').textContent = me.runs_limit ? `runs ${me.runs_used}/${me.runs_limit}` : 'runs unlimited';
+}
+async function share(){
+  if(!lastResult || !lastResult.run_id){ alert('Run something first'); return; }
+  const r = await fetch('api/share/' + lastResult.run_id, {method:'POST'});
+  const j = await r.json();
+  if(j.ok){ prompt('Shareable report link (unlisted):', location.origin + j.url); }
+  else if(j.error === 'plan_required'){ if(confirm('Share links need Pro. Open WhatsApp to upgrade?')) open(j.whatsapp, '_blank'); }
+  else alert(j.error);
+}
+function upgrade(){ open(me.whatsapp, '_blank'); }
+async function logout(){ await fetch('api/logout', {method:'POST'}); location.href = '/discovery'; }
+function pill(txt, cls){ return `<span class="pill ${cls}">${txt}</span>`; }
+
+function render(j){
+  const el = document.getElementById('out');
+  if(!j.ok){ el.innerHTML = `<div class="card"><h2>Run failed</h2><p>${j.error||'unknown'}</p></div>`; return; }
+  const u = j.target.uniprot || {};
+  let h = `<div class="card"><h2>Target</h2>
+    <div class="kv">
+    <b>UniProt</b><span><a href="${u.uniprot_url||'#'}" target="_blank" style="color:var(--acc)">${u.accession||'—'}</a> · ${u.gene||''} — ${u.protein||''}</span>
+    <b>Organism</b><span>${u.organism||'—'} · ${u.length||'—'} aa</span>
+    <b>Function</b><span>${(u.function||'—').slice(0,400)}</span>
+    <b>ChEMBL target</b><span>${j.target.chembl_target ? j.target.chembl_target.chembl_id + ' — ' + j.target.chembl_target.name : 'not mapped'}</span>
+    <b>Known ligands</b><span>${j.ligands_found} bioactivities (pChEMBL ≥ 5)</span>
+    </div></div>`;
+
+  h += `<div class="card"><h2>Pipeline steps</h2><div class="steps">` +
+    j.steps.map(s => `<span class="step ${(s.status==='ok'||s.status==='target_only')?'ok':(s.status==='skipped'?'':'warn')}">${s.step}. ${s.name} — ${s.status}${s.count!=null?' ('+s.count+')':''}<br><small>${s.source}</small></span>`).join('') +
+    `</div></div>`;
+
+  h += `<div class="card"><h2>Ranked leads
+    <button class="ghost" onclick="download()">⬇ JSON</button>
+    ${me && me.can_share ? '<button class="ghost" onclick="share()">🔗 Share link</button>' : ''}
+    </h2>
+  <div style="overflow-x:auto"><table><tr><th>#</th><th>Lead</th><th>Score</th><th>Sim</th><th>Docking</th><th>Known activity</th><th>Drug-likeness</th><th>PAINS</th><th>Tox flags</th><th></th></tr>`;
+  for(const l of j.leads){
+    const d = l.descriptors || {};
+    const tox = l.tox && l.tox.assays ? Object.entries(l.tox.assays).filter(([k,v])=>v!=null && v>=0.5) : [];
+    h += `<tr>
+      <td class="score">${l.rank}</td>
+      <td><b>${l.label}</b><div class="mono">${(l.smiles||'').slice(0,60)}${(l.smiles||'').length>60?'…':''}</div>
+        ${l.pubchem&&l.pubchem.url?`<a href="${l.pubchem.url}" target="_blank" style="color:var(--acc);font-size:12px">PubChem CID ${l.pubchem.cid}</a>`:''}</td>
+      <td class="score" style="color:${l.score>=70?'var(--acc)':(l.score>=50?'var(--warn)':'var(--bad)')}">${l.score}</td>
+      <td>${l.similarity}</td>
+      <td>${l.docking_kcal_mol!=null?`<b style="color:var(--acc)">${l.docking_kcal_mol}</b> <small>kcal/mol</small>`:'—'}</td>
+      <td>${l.known_activity&&l.known_activity.pchembl?('pChEMBL '+l.known_activity.pchembl):'—'}</td>
+      <td>${d.lipinski_pass!=null?(d.lipinski_pass?pill('Lipinski ✓','g'):pill('Lipinski ✗','r')):'—'}
+          ${d.veber_pass!=null?(d.veber_pass?pill('Veber ✓','g'):pill('Veber ✗','r')):''}
+          <div class="mono">MW ${d.mw??'—'} · logP ${d.logp??'—'}</div></td>
+      <td>${l.pains ? (l.pains.length? pill(l.pains.length+' alerts','r') : pill('clean','g')) : '—'}</td>
+      <td>${l.tox ? (tox.length? tox.map(([k,v])=>pill(k.split('-').pop()+':'+v,'a')).join('') : pill('low','g')) + `<div class="mono">${l.tox.mode||''}</div>` : '—'}</td>
+      <td><details><summary>detail</summary><div class="mono">score: ${JSON.stringify(l.score_detail)}<br>formula: ${d.formula||'—'}<br>HBD ${d.hbd??'—'} HBA ${d.hba??'—'} TPSA ${d.tpsa??'—'} rot ${d.rotatable??'—'}<br>pains: ${(l.pains||[]).join(', ')||'none'}</div></details></td>
+    </tr>`;
+  }
+  h += `</table></div>
+  <div class="note">${j.disclaimer}</div></div>`;
+  el.innerHTML = h;
+}
+
+function download(){
+  if(!lastResult) return;
+  const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'leadforge-report.json';
+  a.click();
+}
+init();
+</script>
+</body>
+</html>

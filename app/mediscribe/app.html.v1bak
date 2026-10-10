@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MediScribe — Personal Research Prototype</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--teal:#0b6e5f;--teal-d:#084f45;--red:#c62828;--red-bg:#fdecea;--amber:#b26a00;--amber-bg:#fff6e0;--info:#1565c0;--info-bg:#e8f0fe;--ok:#2e7d32;--ok-bg:#e8f5e9;--line:#e5e5e5;--mut:#666}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;color:#1c1c1c;background:#f7f9f8;line-height:1.55}
+header{background:var(--teal);color:#fff;padding:18px 16px}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:4px 0 0;font-size:.85rem;opacity:.9}
+.disclaim{background:#fff3e0;border-bottom:2px solid #ffb74d;padding:10px 16px;font-size:.82rem;color:#5d4037}
+.disclaim b{color:#bf360c}
+.wrap{max-width:860px;margin:0 auto;padding:14px 14px 60px}
+.tabs{display:flex;gap:8px;margin:14px 0;position:sticky;top:0;background:#f7f9f8;padding:8px 0;z-index:5}
+.tabs button{flex:1;padding:11px 4px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:1.02rem;color:var(--teal-d)}
+label{font-size:.85rem;font-weight:600;display:block;margin:10px 0 4px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:1rem;font-family:inherit}
+textarea{min-height:110px;resize:vertical}
+.btn{display:inline-block;background:var(--teal);color:#fff;font-weight:700;padding:11px 20px;border-radius:10px;border:0;cursor:pointer;font-size:1rem;margin:8px 6px 0 0}
+.btn.red{background:var(--red)}.btn.ghost{background:#fff;color:var(--teal);border:1px solid var(--teal)}
+.btn.sm{padding:7px 12px;font-size:.85rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:#e0f2f1;color:#004d40;border-radius:16px;padding:4px 10px;font-size:.82rem;display:inline-flex;align-items:center;gap:6px}
+.chip button{border:0;background:none;color:#004d40;cursor:pointer;font-weight:700}
+.pickrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pick{border:1px solid #bbb;background:#fff;border-radius:16px;padding:6px 12px;font-size:.85rem;cursor:pointer}
+.pick.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.flag{border-radius:10px;padding:12px;margin-bottom:10px;border-left:6px solid}
+.flag.red{background:var(--red-bg);border-color:var(--red)}
+.flag.amber{background:var(--amber-bg);border-color:var(--amber)}
+.flag.info{background:var(--info-bg);border-color:var(--info)}
+.flag h4{margin:0 0 4px;font-size:.98rem}
+.flag.red h4{color:var(--red)}.flag.amber h4{color:var(--amber)}.flag.info h4{color:var(--info)}
+.flag p{margin:4px 0;font-size:.9rem}
+.flag .src{font-size:.78rem;color:var(--mut)}
+.confirm{display:flex;gap:8px;align-items:flex-start;margin-top:8px;background:rgba(255,255,255,.7);border-radius:8px;padding:8px;font-size:.85rem}
+.drugchip{background:#e8f5e9;color:#1b5e20;border-radius:14px;padding:3px 10px;font-size:.82rem;margin:2px;display:inline-block}
+.secttl{font-size:.95rem;font-weight:700;margin:16px 0 8px;color:var(--teal-d)}
+.muted{color:var(--mut);font-size:.85rem}
+.recbox{border:2px dashed var(--red);border-radius:12px;padding:14px;text-align:center;margin:10px 0}
+.recbox.live{border-style:solid;background:var(--red-bg)}
+#transcript{min-height:130px}
+.kv{font-size:.88rem;margin:3px 0}
+footer{padding:20px;text-align:center;color:var(--mut);font-size:.8rem}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.75rem;font-weight:700}
+.b-red{background:var(--red);color:#fff}.b-amber{background:#fb8c00;color:#fff}.b-info{background:var(--info);color:#fff}.b-ok{background:var(--ok);color:#fff}
+</style>
+</head>
+<body>
+<header>
+<h1>🩺 MediScribe</h1>
+<p>Personal research prototype — AI scribe + drug-safety flags (audio → transcript → "do NOT give" list)</p>
+</header>
+<div class="disclaim">⚠️ <b>Research tool only — NOT medical advice.</b> Flags are prompts to verify with Lexicomp/Medscape and confirm with a doctor/pharmacist. Never change a real prescription based on this app alone. Record patients only with consent.</div>
+<div class="wrap">
+<div class="tabs">
+<button id="tab-p" class="on" onclick="showTab('p')">👤 1. Patients</button>
+<button id="tab-c" onclick="showTab('c')">🎙️ 2. Consult</button>
+<button id="tab-h" onclick="showTab('h')">🗂️ History</button>
+</div>
+
+<!-- PATIENTS -->
+<div id="pane-p">
+<div class="card">
+<h3>Add / edit patient</h3>
+<input type="hidden" id="p-id">
+<label>Name / ID</label><input type="text" id="p-name" placeholder="e.g. Patient A-101">
+<div style="display:flex;gap:10px">
+<div style="flex:1"><label>Age</label><input type="number" id="p-age" min="0" max="120"></div>
+<div style="flex:1"><label>Sex</label><select id="p-sex"><option value="">—</option><option>Female</option><option>Male</option></select></div>
+</div>
+<label>Conditions (tap to select)</label>
+<div class="pickrow" id="p-conds"></div>
+<label>Allergies</label>
+<div class="pickrow" id="p-alg-quick"></div>
+<input type="text" id="p-alg-custom" placeholder="Other allergy (type + Enter)" style="margin-top:6px">
+<div class="chips" id="p-alg-chips"></div>
+<label>Current medications</label>
+<input type="text" id="p-med-input" list="druglist" placeholder="Type drug name + Enter">
+<datalist id="druglist"></datalist>
+<div class="chips" id="p-med-chips"></div>
+<button class="btn" onclick="savePatient()">💾 Save patient</button>
+<button class="btn ghost" onclick="resetPatientForm()">Clear</button>
+</div>
+<div class="card"><h3>Saved patients</h3><div id="patient-list"></div></div>
+</div>
+
+<!-- CONSULT -->
+<div id="pane-c" class="hidden">
+<div class="card">
+<h3>1. Select patient</h3>
+<select id="c-patient" onchange="renderConsultCtx()"></select>
+<div id="c-ctx" class="muted" style="margin-top:6px"></div>
+</div>
+<div class="card">
+<h3>2. Capture consultation audio</h3>
+<div class="recbox" id="recbox">
+<p class="muted" style="margin:0 0 8px">🎤 Mic se doctor-patient guftagu record karo (live transcript).<br>Chrome me kaam karta hai.</p>
+<select id="rec-lang" style="max-width:220px"><option value="en-US">English</option><option value="ur-PK">Urdu</option></select><br>
+<button class="btn red" id="rec-btn" onclick="toggleRec()">⏺ Start recording</button>
+<p class="muted" id="rec-status"></p>
+</div>
+<label>…or paste / type the transcript</label>
+<textarea id="transcript" placeholder="e.g. Doctor: Considering ibuprofen for knee pain…"></textarea>
+<button class="btn ghost sm" onclick="loadDemo()">🧪 Load demo consultation</button>
+</div>
+<div class="card">
+<h3>3. Analyze</h3>
+<p class="muted">Transcript me nayi dawaiyan dhoond kar patient ki saved history (conditions, allergies, current meds) se match karega.</p>
+<button class="btn" onclick="analyze()">🔍 Analyze — which drugs NOT to give?</button>
+<div id="analysis"></div>
+</div>
+<div class="card">
+<h3>🔍 Live drug lookup (real-time)</h3>
+<p class="muted">Kisi bhi dawai ka naam likho — NLM RxNorm se live verify + FDA ka official label (contraindications, interactions, warnings) live.</p>
+<input id="live-q" placeholder="e.g. warfarin" style="max-width:280px;display:inline-block" onkeydown="if(event.key==='Enter')liveLookup()">
+<button class="btn sm" onclick="liveLookup()">Live dekho</button>
+<div id="live-result" style="margin-top:8px"></div>
+</div>
+<div class="card">
+<h3>💬 AI Assistant <span class="badge b-ok">Gemini live</span></h3>
+<p class="muted">Engine ke flags + patient history par sawal poocho. AI sirf <b>samjhata</b> hai — naye "do not give" faisle nahi karta; wo engine ka kaam hai. Har jawab research ke liye, medical advice nahi.</p>
+<div id="ai-setup">
+<input id="ai-key" type="password" placeholder="Gemini API key (sirf tumhare browser me rehti hai)" style="max-width:340px" oninput="saveAiKey()">
+<input id="ai-model" placeholder="model" value="gemini-flash-latest" style="max-width:220px" title="Model ka naam — gemini-flash-latest hamesha newest hota hai">
+<p class="muted" style="margin:4px 0">🔑 Key banao (free, 2 min): <b>aistudio.google.com</b> → Get API key → yahan paste karo. Key kabhi chat/server par save nahi hoti.</p>
+</div>
+<div id="ai-log" style="max-height:280px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin:8px 0;background:#f8fafc"></div>
+<input id="ai-q" placeholder="e.g. Ye red flags simple lafzon me samjhao…" style="max-width:70%;display:inline-block" onkeydown="if(event.key==='Enter')aiAsk()">
+<button class="btn sm" onclick="aiAsk()">Bhejo</button>
+</div>
+</div>
+
+<!-- HISTORY -->
+<div id="pane-h" class="hidden">
+<div class="card"><h3>Consultation history</h3>
+<select id="h-patient" onchange="renderHistory()"></select>
+<div id="hist-list" style="margin-top:10px"></div>
+</div>
+</div>
+
+</div>
+<footer>MediScribe v1 · personal research prototype · data stays in this browser (localStorage) · not medical advice</footer>
+<script>
+/* ============ DRUG DATABASE (curated, textbook-level) ============ */
+const DRUGS=[
+{id:"warfarin",n:["warfarin","coumadin"],c:"Anticoagulant"},
+{id:"aspirin",n:["aspirin","disprin","ecosprin","acetylsalicylic acid"],c:"Antiplatelet"},
+{id:"clopidogrel",n:["clopidogrel","plavix","clopilet"],c:"Antiplatelet"},
+{id:"heparin",n:["heparin"],c:"Anticoagulant (injectable)"},
+{id:"enoxaparin",n:["enoxaparin","clexane"],c:"LMWH anticoagulant"},
+{id:"apixaban",n:["apixaban","eliquis"],c:"DOAC anticoagulant"},
+{id:"rivaroxaban",n:["rivaroxaban","xarelto"],c:"DOAC anticoagulant"},
+{id:"atenolol",n:["atenolol","tenormin"],c:"Beta-blocker"},
+{id:"propranolol",n:["propranolol","inderal"],c:"Beta-blocker (non-selective)"},
+{id:"metoprolol",n:["metoprolol","betaloc"],c:"Beta-blocker"},
+{id:"amlodipine",n:["amlodipine","norvasc"],c:"Calcium-channel blocker"},
+{id:"verapamil",n:["verapamil","isoptin"],c:"Calcium-channel blocker (non-DHP)"},
+{id:"diltiazem",n:["diltiazem"],c:"Calcium-channel blocker (non-DHP)"},
+{id:"lisinopril",n:["lisinopril"],c:"ACE inhibitor"},
+{id:"enalapril",n:["enalapril","enzar"],c:"ACE inhibitor"},
+{id:"losartan",n:["losartan"],c:"ARB"},
+{id:"valsartan",n:["valsartan"],c:"ARB"},
+{id:"spironolactone",n:["spironolactone","aldactone"],c:"K+-sparing diuretic"},
+{id:"hctz",n:["hydrochlorothiazide","hctz","thiazide"],c:"Thiazide diuretic"},
+{id:"furosemide",n:["furosemide","lasix"],c:"Loop diuretic"},
+{id:"digoxin",n:["digoxin","lanoxin"],c:"Cardiac glycoside"},
+{id:"amiodarone",n:["amiodarone","cordarone"],c:"Antiarrhythmic"},
+{id:"atorvastatin",n:["atorvastatin","lipitor"],c:"Statin"},
+{id:"simvastatin",n:["simvastatin"],c:"Statin"},
+{id:"rosuvastatin",n:["rosuvastatin","crestor"],c:"Statin"},
+{id:"nitroglycerin",n:["nitroglycerin","nitrate","nitrates","isosorbide"],c:"Nitrate"},
+{id:"sildenafil",n:["sildenafil","viagra"],c:"PDE5 inhibitor"},
+{id:"metformin",n:["metformin","glucophage"],c:"Antidiabetic (biguanide)"},
+{id:"glibenclamide",n:["glibenclamide","glyburide","daonil"],c:"Sulfonylurea"},
+{id:"insulin",n:["insulin"],c:"Antidiabetic"},
+{id:"amoxicillin",n:["amoxicillin"],c:"Penicillin antibiotic"},
+{id:"amoxclav",n:["amoxicillin-clavulanate","amoxicillin clavulanate","augmentin"],c:"Penicillin + beta-lactamase inhibitor"},
+{id:"ceftriaxone",n:["ceftriaxone","rocephin"],c:"Cephalosporin"},
+{id:"cefixime",n:["cefixime"],c:"Cephalosporin"},
+{id:"azithromycin",n:["azithromycin","zithromax"],c:"Macrolide"},
+{id:"clarithromycin",n:["clarithromycin"],c:"Macrolide"},
+{id:"erythromycin",n:["erythromycin"],c:"Macrolide"},
+{id:"ciprofloxacin",n:["ciprofloxacin","cipro"],c:"Fluoroquinolone"},
+{id:"levofloxacin",n:["levofloxacin"],c:"Fluoroquinolone"},
+{id:"doxycycline",n:["doxycycline"],c:"Tetracycline"},
+{id:"metronidazole",n:["metronidazole","flagyl"],c:"Nitroimidazole antibiotic"},
+{id:"vancomycin",n:["vancomycin"],c:"Glycopeptide antibiotic"},
+{id:"gentamicin",n:["gentamicin"],c:"Aminoglycoside"},
+{id:"cotrimoxazole",n:["trimethoprim-sulfamethoxazole","trimethoprim sulfamethoxazole","cotrimoxazole","septran","bactrim","tmp-smx"],c:"Sulfonamide antibiotic"},
+{id:"nitrofurantoin",n:["nitrofurantoin"],c:"UTI antibiotic"},
+{id:"rifampin",n:["rifampin","rifampicin"],c:"Anti-TB (enzyme inducer)"},
+{id:"isoniazid",n:["isoniazid","inh"],c:"Anti-TB"},
+{id:"linezolid",n:["linezolid","zyvox"],c:"Oxazolidinone antibiotic (MAOI activity)"},
+{id:"fluconazole",n:["fluconazole"],c:"Azole antifungal"},
+{id:"ibuprofen",n:["ibuprofen","brufen"],c:"NSAID"},
+{id:"diclofenac",n:["diclofenac","voltarol","voren"],c:"NSAID"},
+{id:"naproxen",n:["naproxen"],c:"NSAID"},
+{id:"celecoxib",n:["celecoxib"],c:"COX-2 inhibitor (NSAID)"},
+{id:"paracetamol",n:["paracetamol","acetaminophen","panadol"],c:"Analgesic/antipyretic"},
+{id:"tramadol",n:["tramadol","tramal"],c:"Opioid analgesic"},
+{id:"morphine",n:["morphine"],c:"Opioid analgesic"},
+{id:"codeine",n:["codeine"],c:"Opioid (prodrug)"},
+{id:"fluoxetine",n:["fluoxetine","prozac"],c:"SSRI"},
+{id:"sertraline",n:["sertraline","zoloft"],c:"SSRI"},
+{id:"escitalopram",n:["escitalopram"],c:"SSRI"},
+{id:"amitriptyline",n:["amitriptyline"],c:"Tricyclic antidepressant"},
+{id:"phenelzine",n:["phenelzine","maoi","mao inhibitor"],c:"MAOI antidepressant"},
+{id:"lithium",n:["lithium"],c:"Mood stabilizer"},
+{id:"carbamazepine",n:["carbamazepine","tegral","tegretol"],c:"Antiepileptic (enzyme inducer)"},
+{id:"phenytoin",n:["phenytoin","epanutin"],c:"Antiepileptic"},
+{id:"valproate",n:["valproate","valproic acid","depakine","divalproex"],c:"Antiepileptic"},
+{id:"levetiracetam",n:["levetiracetam","keppra"],c:"Antiepileptic"},
+{id:"diazepam",n:["diazepam","valium"],c:"Benzodiazepine"},
+{id:"alprazolam",n:["alprazolam","xanax"],c:"Benzodiazepine"},
+{id:"haloperidol",n:["haloperidol"],c:"Antipsychotic"},
+{id:"olanzapine",n:["olanzapine"],c:"Antipsychotic"},
+{id:"omeprazole",n:["omeprazole","risek"],c:"Proton-pump inhibitor"},
+{id:"salbutamol",n:["salbutamol","albuterol","ventolin"],c:"SABA bronchodilator"},
+{id:"prednisolone",n:["prednisolone","prednisone"],c:"Corticosteroid"},
+{id:"dexamethasone",n:["dexamethasone"],c:"Corticosteroid"},
+{id:"levothyroxine",n:["levothyroxine","thyroxine"],c:"Thyroid hormone"},
+{id:"allopurinol",n:["allopurinol","zyloric"],c:"Xanthine oxidase inhibitor"},
+{id:"colchicine",n:["colchicine"],c:"Anti-gout"},
+{id:"methotrexate",n:["methotrexate","mtx"],c:"Immunosuppressant/chemo"},
+{id:"azathioprine",n:["azathioprine","imuran"],c:"Immunosuppressant"},
+{id:"theophylline",n:["theophylline"],c:"Methylxanthine bronchodilator"},
+{id:"potassium",n:["potassium","potassium chloride","kcl"],c:"Potassium supplement"},
+{id:"ocp",n:["oral contraceptive","contraceptive pill","birth control pill","estrogen pill"],c:"Combined oral contraceptive"}
+];
+/* groups for class-level rules */
+const GROUPS={
+acei:["lisinopril","enalapril"],arb:["losartan","valsartan"],
+nsaid:["ibuprofen","diclofenac","naproxen","celecoxib"],
+ssri:["fluoxetine","sertraline","escitalopram"],
+macrolide:["azithromycin","clarithromycin","erythromycin"],
+quinolone:["ciprofloxacin","levofloxacin"],statin:["atorvastatin","simvastatin","rosuvastatin"],
+benzo:["diazepam","alprazolam"],opioid:["tramadol","morphine","codeine"],
+penicillin:["amoxicillin","amoxclav"],ceph:["ceftriaxone","cefixime"],
+sulfa:["cotrimoxazole"],bb:["atenolol","propranolol","metoprolol"],
+nondhp:["verapamil","diltiazem"],steroid:["prednisolone","dexamethasone"],
+anticoag:["warfarin","heparin","enoxaparin","apixaban","rivaroxaban"]
+};
+/* [drugA, drugB, severity red|amber, note] — drug may be id or group */
+const INTERACTIONS=[
+["warfarin","nsaid","red","Bleeding risk greatly increased — avoid NSAIDs; paracetamol is the safer analgesic."],
+["warfarin","aspirin","red","Dual anticoagulant effect — major bleeding risk. Only combined under specialist supervision."],
+["warfarin","metronidazole","red","INR increased — bleeding risk. Monitor INR closely."],
+["warfarin","fluconazole","red","INR increased — bleeding risk. Monitor INR closely."],
+["warfarin","macrolide","amber","INR may rise — watch for bleeding, check INR."],
+["warfarin","cotrimoxazole","red","INR increased — bleeding risk."],
+["warfarin","amiodarone","red","INR increased — reduce warfarin dose, monitor INR."],
+["warfarin","rifampin","red","Warfarin effect reduced — clotting risk. Monitor INR, dose usually needs increase."],
+["acei","spironolactone","red","Hyperkalemia (high potassium) risk — monitor K+ and kidney function."],
+["acei","potassium","red","Hyperkalemia risk — avoid potassium supplements."],
+["arb","spironolactone","red","Hyperkalemia risk — monitor K+."],
+["acei","nsaid","amber","Kidney injury risk + blood-pressure control reduced."],
+["arb","nsaid","amber","Kidney injury risk + blood-pressure control reduced."],
+["ssri","phenelzine","red","Serotonin syndrome — CONTRAINDICATED. Needs 14-day washout between them."],
+["ssri","tramadol","red","Serotonin syndrome + seizure risk — avoid combination."],
+["ssri","linezolid","red","Serotonin syndrome (linezolid has MAOI activity) — avoid."],
+["tramadol","linezolid","red","Serotonin syndrome risk — avoid."],
+["gentamicin","furosemide","red","Ototoxicity (hearing damage) risk increased."],
+["gentamicin","vancomycin","red","Nephrotoxicity increased — monitor kidney function and drug levels."],
+["statin","clarithromycin","red","Rhabdomyolysis (muscle breakdown) risk — hold statin or switch antibiotic."],
+["statin","erythromycin","red","Rhabdomyolysis risk — hold statin or switch antibiotic."],
+["statin","fluconazole","amber","Statin levels rise — muscle-pain risk; monitor, consider dose reduction."],
+["digoxin","verapamil","red","Digoxin toxicity — reduce digoxin dose, monitor levels."],
+["digoxin","diltiazem","red","Digoxin levels rise — monitor for toxicity."],
+["digoxin","amiodarone","red","Digoxin levels rise — halve digoxin dose, monitor."],
+["digoxin","clarithromycin","red","Digoxin levels rise — monitor for toxicity."],
+["digoxin","furosemide","amber","Low potassium raises digoxin toxicity risk — monitor K+."],
+["lithium","nsaid","red","Lithium toxicity — monitor lithium levels closely."],
+["lithium","hctz","red","Lithium levels rise — toxicity risk; monitor levels."],
+["lithium","acei","amber","Lithium levels may rise — monitor."],
+["methotrexate","nsaid","red","Methotrexate toxicity (kidney + bone marrow) — avoid NSAIDs."],
+["methotrexate","cotrimoxazole","red","Severe bone-marrow suppression — avoid combination."],
+["allopurinol","azathioprine","red","Severe myelosuppression — cut azathioprine to ~25% dose under specialist care."],
+["carbamazepine","clarithromycin","red","Carbamazepine toxicity — monitor levels, consider alternative antibiotic."],
+["carbamazepine","erythromycin","red","Carbamazepine toxicity — monitor levels."],
+["carbamazepine","fluconazole","amber","Carbamazepine levels rise — monitor."],
+["carbamazepine","ocp","amber","Contraceptive failure (enzyme induction) — use non-hormonal method."],
+["rifampin","ocp","red","Contraceptive failure — use alternative contraception."],
+["opioid","benzo","red","Respiratory depression — FDA black-box warning. Avoid combined use."],
+["clopidogrel","omeprazole","amber","Clopidogrel activation reduced — pantoprazole preferred if PPI needed."],
+["aspirin","ibuprofen","amber","Ibuprofen blocks aspirin's heart protection — take aspirin ≥30 min before ibuprofen."],
+["glibenclamide","fluconazole","red","Severe hypoglycemia risk — monitor blood sugar closely."],
+["insulin","propranolol","amber","Masks warning signs of low blood sugar (tremor, palpitations)."],
+["theophylline","ciprofloxacin","red","Theophylline toxicity — reduce theophylline dose, monitor levels."],
+["theophylline","clarithromycin","red","Theophylline toxicity — monitor levels."],
+["colchicine","clarithromycin","red","Colchicine toxicity (fatal cases reported) — avoid; dose-adjust only under specialist care."],
+["sildenafil","nitroglycerin","red","Severe hypotension — ABSOLUTE contraindication. Never combine."],
+["quinolone","steroid","amber","Tendon-rupture risk increased (especially age >60)."],
+["fluconazole","phenytoin","amber","Phenytoin toxicity — monitor levels."],
+["levothyroxine","omeprazole","amber","Thyroxine absorption reduced — take thyroxine alone on empty stomach."],
+["spironolactone","cotrimoxazole","red","Hyperkalemia — trimethoprim blocks potassium excretion."],
+["ssri","nsaid","amber","Bleeding risk increased — watch for GI bleeding."],
+["nondhp","propranolol","red","Severe bradycardia / heart block — avoid combination."],
+["isoniazid","rifampin","amber","Liver-injury risk increased — monitor liver function tests."],
+["phenytoin","valproate","amber","Protein-binding displacement — monitor free phenytoin levels."],
+["carbamazepine","valproate","amber","Levels of both affected — monitor drug levels."]
+];
+/* [drug/group, condition, severity, note] */
+const CONTRA=[
+["acei","pregnancy","red","Teratogenic (fetal kidney damage) — STOP immediately, switch therapy."],
+["arb","pregnancy","red","Teratogenic — STOP immediately."],
+["statin","pregnancy","red","Contraindicated in pregnancy — stop."],
+["warfarin","pregnancy","red","Teratogenic — switch to heparin/enoxaparin under specialist care."],
+["doxycycline","pregnancy","red","Affects fetal teeth and bones — avoid."],
+["doxycycline","child","red","Avoid under 8 years — permanent teeth staining."],
+["valproate","pregnancy","red","Neural-tube defects — avoid in pregnancy."],
+["valproate","liver","red","Hepatotoxic — avoid in liver disease."],
+["methotrexate","pregnancy","red","Abortifacient/teratogenic — absolute contraindication."],
+["methotrexate","liver","red","Hepatotoxic — avoid in liver disease."],
+["nsaid","ulcer","red","GI-bleeding risk — avoid NSAIDs; consider paracetamol."],
+["nsaid","ckd","red","Worsens kidney function — avoid."],
+["nsaid","pregnancy","amber","Avoid in 3rd trimester (ductus arteriosus risk)."],
+["nsaid","hf","amber","Fluid retention worsens heart failure."],
+["propranolol","asthma","red","Bronchospasm risk (non-selective) — use cardioselective beta-blocker if essential."],
+["metformin","ckd","red","Lactic-acidosis risk — avoid if eGFR <30."],
+["gentamicin","myasthenia","red","Worsens muscle weakness — avoid."],
+["gentamicin","ckd","amber","Nephrotoxic — dose adjustment and monitoring needed."],
+["ciprofloxacin","myasthenia","red","Worsens myasthenia — FDA warning; avoid."],
+["ciprofloxacin","child","amber","Reserve use in children (joint/cartilage effects)."],
+["codeine","child","red","Contraindicated under 12 — serious breathing risk."],
+["aspirin","child","amber","Reye-syndrome risk in viral illness — avoid in children with fever."],
+["hctz","gout","amber","Raises uric acid — may trigger gout flare."],
+["furosemide","gout","amber","Raises uric acid — may trigger gout flare."],
+["tramadol","epilepsy","amber","Lowers seizure threshold — use with caution."],
+["spironolactone","ckd","red","Hyperkalemia risk in kidney disease."],
+["potassium","ckd","red","Hyperkalemia risk — avoid supplements."],
+["nitrofurantoin","ckd","amber","Ineffective if CrCl <60 + neuropathy risk."],
+["lithium","ckd","amber","Accumulates — monitor levels, dose-adjust."],
+["lithium","pregnancy","amber","Heart-defect risk (1st trimester) — specialist decision only."],
+["glibenclamide","liver","amber","Hypoglycemia risk in liver disease."],
+["glibenclamide","elderly","amber","Hypoglycemia risk in elderly — safer alternatives preferred."],
+["paracetamol","liver","amber","Keep ≤2–3 g/day in liver disease."],
+["statin","liver","red","Contraindicated in active liver disease."],
+["carbamazepine","liver","amber","Monitor liver function tests."],
+["rifampin","liver","amber","Hepatotoxic — monitor LFTs."],
+["isoniazid","liver","amber","Hepatotoxic — monitor LFTs."],
+["allopurinol","ckd","amber","Reduce dose in kidney disease."],
+["colchicine","ckd","amber","Reduce dose in kidney disease."],
+["colchicine","liver","amber","Reduce dose in liver disease."],
+["digoxin","ckd","amber","Accumulates — monitor levels and kidney function."],
+["enoxaparin","pregnancy","info","Preferred anticoagulant in pregnancy (does not cross placenta)."],
+["heparin","pregnancy","info","Preferred anticoagulant in pregnancy."],
+["insulin","pregnancy","info","Preferred option for diabetes in pregnancy."]
+];
+/* allergy rules: [allergyKey, targetGroupOrId, severity, note] */
+const ALLERGY_RULES=[
+["penicillin","penicillin","red","Penicillin allergy — AVOID all penicillins (anaphylaxis risk)."],
+["penicillin","ceph","amber","Penicillin allergy — cephalosporin cross-reactivity ~2%; use with caution."],
+["sulfa","sulfa","red","Sulfa allergy — avoid sulfonamides (incl. cotrimoxazole)."],
+["nsaid","nsaid","red","NSAID allergy — avoid all NSAIDs."],
+["nsaid","aspirin","red","NSAID allergy — avoid aspirin too."]
+];
+const CONDITIONS=[
+["pregnancy","Pregnancy"],["breastfeeding","Breastfeeding"],["diabetes","Diabetes"],
+["hypertension","Hypertension"],["asthma","Asthma"],["ckd","Chronic kidney disease"],
+["liver","Liver disease"],["ulcer","Peptic ulcer"],["gout","Gout"],["hf","Heart failure"],
+["epilepsy","Epilepsy"],["myasthenia","Myasthenia gravis"],["child","Child < 12 yrs"],["elderly","Elderly > 65 yrs"]
+];
+const COND_LABEL=Object.fromEntries(CONDITIONS);
+const COUNSEL={
+metronidazole:"No alcohol during treatment and for 48h after (disulfiram-like reaction).",
+doxycycline:"Take with a full glass of water; separate dairy/antacids/iron by 2–3h; sun sensitivity — use sunscreen.",
+levothyroxine:"Take on an empty stomach, 30–60 min before breakfast.",
+alendronate:"",
+sildenafil:"Never combine with nitrate heart medicines.",
+warfarin:"Keep vitamin-K foods (leafy greens) consistent; report any bleeding/bruising."
+};
+/* ============ APP LOGIC ============ */
+const $=id=>document.getElementById(id);
+const store={
+ get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+ set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+const drugById=id=>DRUGS.find(d=>d.id===id);
+const expand=x=>GROUPS[x]?GROUPS[x].slice():[x];
+/* alias map: name -> drug id, longest first */
+const ALIASES=[];
+DRUGS.forEach(d=>d.n.forEach(n=>ALIASES.push([n.toLowerCase(),d.id])));
+ALIASES.sort((a,b)=>b[0].length-a[0].length);
+function extractDrugs(text){
+ const t=" "+text.toLowerCase().replace(/[^a-z0-9+\- ]/g," ")+" ";
+ const found={},order=[];
+ ALIASES.forEach(([name,id])=>{
+  const re=new RegExp("\\b"+name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b");
+  if(re.test(t)&&!found[id]){found[id]=name;order.push(id);}
+ });
+ return order.map(id=>({id,label:drugById(id).n[0],cls:drugById(id).c}));
+}
+/* expanded interaction lookup: "a|b" (sorted) -> {sev,note} */
+const IX={};
+INTERACTIONS.forEach(([a,b,sev,note])=>{
+ expand(a).forEach(x=>expand(b).forEach(y=>{
+  if(x===y)return;
+  IX[[x,y].sort().join("|")]={sev,note,a:x,b:y};
+ }));
+});
+const CONTRAX={}; /* "drug|cond" -> {sev,note} */
+CONTRA.forEach(([d,c,sev,note])=>{expand(d).forEach(x=>{CONTRAX[x+"|"+c]={sev,note};});});
+/* ---------- patients ---------- */
+let selConds=new Set(), algList=[], medList=[], editId=null;
+function initPickers(){
+ $("p-conds").innerHTML=CONDITIONS.map(([id,l])=>`<button type="button" class="pick" data-c="${id}" onclick="togCond('${id}')">${l}</button>`).join("");
+ $("p-alg-quick").innerHTML=["penicillin","sulfa","nsaid","aspirin"].map(a=>`<button type="button" class="pick" onclick="addAlg('${a}')">${a}</button>`).join("");
+ $("druglist").innerHTML=DRUGS.map(d=>`<option value="${d.n[0]}">`).join("");
+}
+function togCond(id){selConds.has(id)?selConds.delete(id):selConds.add(id);
+ document.querySelector(`#p-conds [data-c="${id}"]`).classList.toggle("on");}
+function addAlg(a){a=a.trim().toLowerCase();if(a&&!algList.includes(a)){algList.push(a);renderAlgChips();}}
+function renderAlgChips(){$("p-alg-chips").innerHTML=algList.map((a,i)=>`<span class="chip">${a}<button onclick="algList.splice(${i},1);renderAlgChips()">×</button></span>`).join("");}
+function addMed(name){name=name.trim();if(!name)return;
+ const id=resolveDrugId(name);
+ const label=id?drugById(id).n[0]:name.toLowerCase();
+ if(!medList.find(m=>m.label===label)){medList.push({label,id});renderMedChips();}}
+function renderMedChips(){$("p-med-chips").innerHTML=medList.map((m,i)=>`<span class="chip">💊 ${m.label}${m.id?"":" ⚠ (not in DB — flags limited)"}<button onclick="medList.splice(${i},1);renderMedChips()">×</button></span>`).join("");}
+function savePatient(){
+ const name=$("p-name").value.trim();if(!name){alert("Patient name/ID likho.");return;}
+ const age=parseInt($("p-age").value)||null;
+ const p={id:editId||("p"+Date.now()),name,age,sex:$("p-sex").value,
+  conds:[...selConds],algs:[...algList],meds:medList.map(m=>m.label)};
+ const all=store.get("mediscribe_patients_v1",[]);
+ const i=all.findIndex(x=>x.id===p.id);i>=0?all[i]=p:all.push(p);
+ store.set("mediscribe_patients_v1",all);resetPatientForm();renderPatients();
+ /* Step 1: history save hote hi fori safety check */
+ setTimeout(()=>patientCheck(p.id),300);
+}
+function resetPatientForm(){editId=null;$("p-id").value="";$("p-name").value="";$("p-age").value="";$("p-sex").value="";
+ selConds=new Set();algList=[];medList=[];renderAlgChips();renderMedChips();
+ document.querySelectorAll("#p-conds .pick").forEach(b=>b.classList.remove("on"));}
+function editPatient(id){const p=store.get("mediscribe_patients_v1",[]).find(x=>x.id===id);if(!p)return;
+ editId=id;$("p-name").value=p.name;$("p-age").value=p.age||"";$("p-sex").value=p.sex||"";
+ selConds=new Set(p.conds);algList=[...p.algs];
+ medList=p.meds.map(label=>{const id=resolveDrugId(label);return{label:id?drugById(id).n[0]:label,id};});
+ document.querySelectorAll("#p-conds .pick").forEach(b=>b.classList.toggle("on",selConds.has(b.dataset.c)));
+ renderAlgChips();renderMedChips();window.scrollTo(0,0);}
+function delPatient(id){if(!confirm("Delete this patient and their history?"))return;
+ store.set("mediscribe_patients_v1",store.get("mediscribe_patients_v1",[]).filter(x=>x.id!==id));
+ store.set("mediscribe_consults_v1",store.get("mediscribe_consults_v1",[]).filter(c=>c.patientId!==id));
+ renderPatients();}
+function derivedConds(p){const s=new Set(p.conds);if(p.age!=null){if(p.age<12)s.add("child");if(p.age>65)s.add("elderly");}return s;}
+function renderPatients(){
+ const all=store.get("mediscribe_patients_v1",[]);
+ $("patient-list").innerHTML=all.length?all.map(p=>{
+  const dc=[...derivedConds(p)].map(c=>COND_LABEL[c]||c);
+  return `<div class="card" style="margin-bottom:8px"><b>${p.name}</b> <span class="muted">${p.age!=null?p.age+"y":""} ${p.sex||""}</span>
+  <div class="kv">🩺 ${dc.join(", ")||"—"}</div>
+  <div class="kv">🤧 Allergies: ${p.algs.join(", ")||"—"}</div>
+  <div class="kv">💊 Meds: ${p.meds.join(", ")||"—"}</div>
+  <button class="btn sm" onclick="patientCheck('${p.id}')">🛡️ Safety check — kaunsi dawai NAHI deni?</button>
+  <button class="btn sm ghost" onclick="editPatient('${p.id}')">Edit</button>
+  <button class="btn sm ghost" onclick="delPatient('${p.id}')">Delete</button>
+  <div id="pcheck-${p.id}"></div></div>`;}).join("")
+ :'<p class="muted">No patients yet. Add one above — ya demo ke liye Consult tab me "Load demo" dabao.</p>';
+ renderPatientSelects();
+}
+function renderPatientSelects(){
+ const all=store.get("mediscribe_patients_v1",[]);
+ const opts=all.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+ $("c-patient").innerHTML=opts||'<option value="">— add a patient first —</option>';
+ $("h-patient").innerHTML=opts||'<option value="">—</option>';
+ renderConsultCtx();renderHistory();
+}
+function getPatient(id){return store.get("mediscribe_patients_v1",[]).find(x=>x.id===id);}
+function renderConsultCtx(){
+ const p=getPatient($("c-patient").value);if(!p){$("c-ctx").innerHTML="";return;}
+ const dc=[...derivedConds(p)].map(c=>COND_LABEL[c]||c);
+ $("c-ctx").innerHTML=`Saved history → 🩺 ${dc.join(", ")||"none"} · 🤧 ${p.algs.join(", ")||"none"} · 💊 ${p.meds.join(", ")||"none"}`;
+}
+function showTab(t){["p","c","h"].forEach(x=>{$("tab-"+x).classList.toggle("on",x===t);$("pane-"+x).classList.toggle("hidden",x!==t);});}
+/* ---------- mic recording (Web Speech API) ---------- */
+let rec=null,recOn=false,recBase="",recFinal="";
+function toggleRec(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){alert("Mic transcription is browser me supported nahi (Chrome use karo). Neeche transcript paste kar do.");return;}
+ if(recOn){rec.stop();return;}
+ rec=new SR();rec.lang=$("rec-lang").value;rec.continuous=true;rec.interimResults=true;
+ recBase=$("transcript").value;recFinal="";
+ rec.onresult=e=>{let interim="";recFinal="";
+  for(let i=0;i<e.results.length;i++){const t=e.results[i][0].transcript;
+   if(e.results[i].isFinal)recFinal+=" "+t;else interim+=" "+t;}
+  $("transcript").value=(recBase+recFinal+" "+interim).trim();};
+ rec.onend=()=>{recOn=false;$("rec-btn").textContent="⏺ Start recording";$("recbox").classList.remove("live");$("rec-status").textContent="Stopped. Transcript upar edit kar sakte ho.";};
+ rec.onerror=e=>{$("rec-status").textContent="Mic error: "+e.error+" — transcript paste kar do.";};
+ rec.start();recOn=true;$("rec-btn").textContent="⏹ Stop recording";$("recbox").classList.add("live");
+ $("rec-status").textContent="🔴 Recording… bolo, live transcript ban raha hai.";}
+
+/* ---------- analysis engine ---------- */
+/* Reusable safety engine: which drugs NOT to give, given drug ids + history.
+   ids = drug ids to check (e.g. current meds, or mentioned+current).
+   newIds = subset considered "new" (for labeling); null = all are existing. */
+function safetyCheck(ids,conds,algs,newIds){
+ const flags=[];const seen=new Set();
+ const nm=id=>drugById(id).n[0];
+ const push=(sev,title,reason,drugs)=>{const k=sev+"|"+title;if(seen.has(k))return;seen.add(k);flags.push({sev,title,reason,confirmed:false,drugs:drugs||[]});};
+ /* allergy */
+ algs.forEach(a=>{ALLERGY_RULES.forEach(([key,target,sev,note])=>{
+  if(a.includes(key))expand(target).forEach(id=>{
+   if(ids.includes(id))push(sev,"⛔ DO NOT GIVE: "+nm(id),`Allergy to "${a}". ${note}`,[nm(id)]);
+  });
+ });});
+ /* contraindications vs conditions */
+ ids.forEach(id=>{conds.forEach(c=>{const r=CONTRAX[id+"|"+c];
+  if(r)push(r.sev,(r.sev==="red"?"⛔ DO NOT GIVE: ":"⚠️ CAUTION: ")+nm(id),
+   `Condition: ${COND_LABEL[c]}. ${r.note}`,[nm(id)]);});});
+ /* interactions among the drugs */
+ ids.forEach(a=>ids.forEach(b=>{if(a>=b)return;const r=IX[a+"|"+b];if(!r)return;
+  const bothNew=newIds&&newIds.has(a)&&newIds.has(b);
+  push(r.sev,(r.sev==="red"?"⛔ DO NOT GIVE: ":"⚠️ CAUTION: ")+nm(a)+" + "+nm(b),
+   r.note+(newIds?(bothNew?" (dono transcript me mention huin)":" (patient ki current medication ke saath)"):" (current medications ke darmiyan)"),[nm(a),nm(b)]);}));
+ return flags;
+}
+function medIdsOf(p){return p.meds.map(m=>resolveDrugId(m)).filter(Boolean);}
+function resolveDrugId(text){
+ const t=(text||"").trim().toLowerCase();if(!t)return null;
+ const hit=ALIASES.find(([n])=>n===t);if(hit)return hit[1];
+ const byId=DRUGS.find(d=>d.id===t);return byId?byId.id:null;
+}
+function analyze(){
+ const p=getPatient($("c-patient").value);
+ if(!p){alert("Pehle patient select karo.");return;}
+ const tx=$("transcript").value.trim();
+ if(tx.length<5){alert("Transcript khaali hai — record karo ya paste karo.");return;}
+ const mentioned=extractDrugs(tx);
+ const conds=derivedConds(p);
+ const curIds=medIdsOf(p);
+ const mids=new Set(mentioned.map(m=>m.id));
+ let flags=safetyCheck([...new Set([...mids,...curIds])],conds,p.algs,mids);
+ /* already-on info + counseling */
+ mentioned.forEach(m=>{
+  if(curIds.includes(m.id))flags.push({sev:"info",title:`ℹ️ Already on: ${m.label}`,reason:"Patient already takes this — duplicate therapy check karo.",confirmed:false});
+  if(COUNSEL[m.id])flags.push({sev:"info",title:`ℹ️ Counseling: ${m.label}`,reason:COUNSEL[m.id],confirmed:false});
+ });
+ window._lastAnalysis={patientId:p.id,tx,mentioned:mentioned.map(m=>m.label),flags,ts:Date.now()};
+ renderAnalysis(p,mentioned,flags);
+}
+/* Step-1 safety check: run on saved history (no consult needed) */
+function patientCheck(id){
+ const p=getPatient(id);if(!p)return;
+ const flags=safetyCheck(medIdsOf(p),derivedConds(p),p.algs,null);
+ const box=$("pcheck-"+id);
+ const red=flags.filter(f=>f.sev==="red").length,amb=flags.filter(f=>f.sev==="amber").length;
+ box.innerHTML=`<div class="secttl">🛡️ History safety check — ${red?"⛔ "+red+" DO NOT GIVE":"koi red flag nahi"} · ${amb?"⚠️ "+amb+" caution":""}</div>`+
+  (flags.length?flags.map(f=>{const cls=f.sev==="red"?"red":f.sev==="amber"?"amber":"info";
+   const drugs=(f.drugs||[]).join("|");
+   return `<div class="flag ${cls}"><h4>${f.title}</h4><p>${f.reason}</p><p class="src">Verify: Lexicomp / Medscape · doctor/pharmacist se confirm karo</p>${drugs?`<button class="btn sm ghost" onclick="liveLabel(this,'${drugs}')">📄 Live FDA label</button><div class="livelabel"></div>`:""}</div>`;}).join("")
+  :'<p class="muted">✅ Current medications me koi flag nahi.</p>');
+ box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+/* Live FDA label lookup — real-time official data */
+async function liveLabel(btn,drugsPipe){
+ const box=btn.parentElement.querySelector(".livelabel");
+ const drugs=drugsPipe.split("|").filter(Boolean);
+ btn.disabled=true;btn.textContent="⏳ Live FDA data la raha hun…";
+ let h="";
+ for(const d of drugs){
+  try{
+   const r=await fetch("/mediscribe/api/label?name="+encodeURIComponent(d));
+   const j=await r.json();
+   if(j.ok){
+    h+=`<div class="card" style="margin-top:6px"><b>📄 ${esc(j.generic_name)} — live FDA label</b> <span class="badge b-ok">LIVE</span>`;
+    if(j.brand_name&&j.brand_name.length)h+=`<div class="kv">Brands: ${j.brand_name.map(esc).join(", ")}</div>`;
+    if(j.boxed_warning)h+=`<p><b>⚫ Boxed warning:</b> ${esc(j.boxed_warning).slice(0,450)}…</p>`;
+    if(j.contraindications)h+=`<p><b>Contraindications:</b> ${esc(j.contraindications).slice(0,450)}…</p>`;
+    if(j.drug_interactions)h+=`<p><b>Drug interactions:</b> ${esc(j.drug_interactions).slice(0,450)}…</p>`;
+    if(j.warnings)h+=`<p><b>Warnings:</b> ${esc(j.warnings).slice(0,450)}…</p>`;
+    h+=`<p class="src">${esc(j.source)}</p></div>`;
+   }else{h+=`<p class="muted">Live label nahi mila: ${esc(d)} (${esc(j.error||"")})</p>`;}
+  }catch(e){h+=`<p class="muted">Live data failed: ${esc(d)} — internet check karo.</p>`;}
+ }
+ box.innerHTML=h;btn.textContent="📄 Live FDA label ✓";btn.disabled=false;
+}
+async function liveLookup(){
+ const q=$("live-q").value.trim();if(q.length<2){alert("Dawai ka naam likho.");return;}
+ const box=$("live-result");box.innerHTML="<p class='muted'>⏳ Live data la raha hun…</p>";
+ let h="";
+ try{
+  const r1=await fetch("/mediscribe/api/rxcui?name="+encodeURIComponent(q));
+  const j1=await r1.json();
+  h+=j1.rxcui
+   ?`<p>✅ <b>${esc(q)}</b> verified — RxCUI ${esc(j1.rxcui)} <span class="badge b-ok">LIVE</span> <span class="src">${esc(j1.source)}</span></p>`
+   :`<p class="muted">⚠️ "${esc(q)}" RxNorm me nahi mila — spelling check karo.</p>`;
+ }catch(e){h+=`<p class="muted">RxNorm verify failed — internet check karo.</p>`;}
+ box.innerHTML=h;
+ const tmp=document.createElement("div");box.appendChild(tmp);
+ const btn=document.createElement("button");btn.className="btn sm";btn.textContent="📄 Live FDA label dekho";
+ const lbl=document.createElement("div");lbl.className="livelabel";
+ const wrap=document.createElement("div");wrap.appendChild(btn);wrap.appendChild(lbl);box.appendChild(wrap);
+ btn.onclick=()=>liveLabel(btn,q);
+}
+/* ---------- AI Assistant (Gemini, user ki key) ---------- */
+const AI_SYS=`You are a pharmacy research assistant inside MediScribe, a personal study tool built by a Pharm-D student. Rules you MUST follow:
+1. You explain and discuss; you NEVER make new "do not give / avoid" prescribing verdicts. The deterministic safety engine already produced flags — refer to them, explain mechanisms in simple words, suggest what to verify.
+2. Always end medical answers with: verify with a doctor/pharmacist or Lexicomp/Medscape. This is a research tool, not medical advice.
+3. Be concise, use simple English or Roman Urdu as the user writes. Use short bullet points.`;
+let aiHist=[];
+function saveAiKey(){try{localStorage.setItem("mediscribe_gemini_key",$("ai-key").value.trim());}catch(e){}}
+function aiContext(){
+ const pid=$("c-patient").value;const p=pid?getPatient(pid):null;
+ let c="";
+ if(p){c+=`Patient: ${p.name}, conditions: ${(p.conds||[]).join(", ")||"—"}, allergies: ${(p.algs||[]).join(", ")||"—"}, current meds: ${(p.meds||[]).join(", ")||"—"}.\n`;}
+ const a=window._lastAnalysis;
+ if(a&&a.flags&&a.flags.length){
+  c+=`Engine flags (${a.flags.length}):\n`+a.flags.map((f,i)=>`${i+1}. [${f.sev.toUpperCase()}] ${f.title} — ${f.reason} (confirmed: ${f.confirmed?"yes":"PENDING"})`).join("\n");
+ }else{c+=`Abhi koi analysis nahi hui.`;}
+ return c;
+}
+function aiLog(role,text){
+ const d=document.createElement("div");
+ d.style.cssText="margin:6px 0;padding:8px 10px;border-radius:8px;"+(role==="user"?"background:#e0f2fe;text-align:right":"background:#fff;border:1px solid #e2e8f0");
+ d.innerHTML=`<b>${role==="user"?"Tum":"🤖 AI"}</b><br>${esc(text).replace(/\n/g,"<br>")}`;
+ $("ai-log").appendChild(d);$("ai-log").scrollTop=$("ai-log").scrollHeight;
+}
+async function aiAsk(){
+ const key=($("ai-key").value||"").trim();
+ if(!key){alert("Pehle Gemini API key paste karo (aistudio.google.com se free milti hai).");$("ai-key").focus();return;}
+ const q=$("ai-q").value.trim();if(!q)return;
+ const model=($("ai-model").value||"gemini-flash-latest").trim()||"gemini-flash-latest";
+ aiLog("user",q);$("ai-q").value="";
+ aiHist.push({role:"user",text:`[Patient context]\n${aiContext()}\n\n[Question]\n${q}`});
+ const typing=document.createElement("div");typing.id="ai-typing";typing.className="muted";typing.textContent="🤖 AI likh raha hai…";
+ $("ai-log").appendChild(typing);$("ai-log").scrollTop=$("ai-log").scrollHeight;
+ try{
+  const r=await fetch("/mediscribe/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({api_key:key,model,system:AI_SYS,messages:aiHist.slice(-10)})});
+  const j=await r.json();
+  typing.remove();
+  if(j.ok){aiLog("model",j.text);aiHist.push({role:"model",text:j.text});}
+  else{aiLog("model","⚠️ Error: "+j.error);aiHist.pop();}
+ }catch(e){typing.remove();aiLog("model","⚠️ Request failed — internet ya server check karo.");aiHist.pop();}
+}
+(function(){try{const k=localStorage.getItem("mediscribe_gemini_key");if(k)$("ai-key").value=k;}catch(e){}})();
+function flagCard(f,i){
+ const cls=f.sev==="red"?"red":f.sev==="amber"?"amber":"info";
+ const drugs=(f.drugs||[]).join("|");
+ return `<div class="flag ${cls}">
+ <h4>${f.title}</h4><p>${f.reason}</p>
+ <p class="src">Verify: Lexicomp / Medscape interaction checker · flag ${i+1}/${window._lastAnalysis.flags.length}</p>
+ ${drugs?`<button class="btn sm ghost" onclick="liveLabel(this,'${drugs}')">📄 Live FDA label</button><div class="livelabel"></div>`:""}
+ <label class="confirm"><input type="checkbox" ${f.confirmed?"checked":""} onchange="confirmAnalyze(${i},this.checked,this)">
+ <span>✅ Doctor/pharmacist se confirm kar liya <span class="cstatus">${f.confirmed?'<b class="badge b-ok">CONFIRMED</b>':'<b class="badge b-amber">PENDING</b>'}</span></span></label>
+ </div>`;
+}
+function confirmAnalyze(i,val,box){
+ const a=window._lastAnalysis;if(!a)return;
+ a.flags[i].confirmed=val;
+ const lbl=box.closest("label.confirm");
+ const st=lbl&&lbl.querySelector(".cstatus");
+ if(st)st.innerHTML=val?'<b class="badge b-ok">CONFIRMED</b>':'<b class="badge b-amber">PENDING</b>';
+ const pend=a.flags.filter(f=>f.confirmed===false&&(f.sev==="red"||f.sev==="amber")).length;
+ const pc=document.getElementById("pend-count");if(pc)pc.textContent=pend;
+}
+function renderAnalysis(p,mentioned,flags){
+ const red=flags.filter(f=>f.sev==="red"),amb=flags.filter(f=>f.sev==="amber"),inf=flags.filter(f=>f.sev==="info");
+ const pend=flags.filter(f=>f.confirmed===false&&(f.sev==="red"||f.sev==="amber")).length;
+ let h=`<div class="secttl">Patient: ${p.name}</div>
+ <div class="kv">Transcript me mili dawaiyan: ${mentioned.length?mentioned.map(m=>`<span class="drugchip">${m.label}</span>`).join(""):'<span class="muted">koi dawai detect nahi hui</span>'}</div>`;
+ h+=`<div class="secttl">⛔ DO NOT GIVE / AVOID (${red.length})</div>`;
+ h+=red.length?red.map((f)=>flagCard(f,flags.indexOf(f))).join(""):'<p class="muted">Koi red flag nahi. 👍</p>';
+ h+=`<div class="secttl">⚠️ CAUTION (${amb.length})</div>`;
+ h+=amb.length?amb.map((f)=>flagCard(f,flags.indexOf(f))).join(""):'<p class="muted">Koi caution nahi.</p>';
+ if(inf.length){h+=`<div class="secttl">ℹ️ Notes (${inf.length})</div>`+inf.map((f)=>flagCard(f,flags.indexOf(f))).join("");}
+ h+=`<div class="card" style="margin-top:12px"><b>Pending confirmations: <span id="pend-count">${pend}</span></b>
+ <p class="muted">Har red/amber flag doctor ya pharmacist se confirm karo, phir checkbox tick karo.</p>
+ <button class="btn sm" onclick="copyReport()">📋 Copy report (doctor/pharmacist ke liye)</button>
+ <button class="btn sm ghost" onclick="saveConsult()">💾 Save consultation</button></div>`;
+ $("analysis").innerHTML=h;$("analysis").scrollIntoView({behavior:"smooth"});
+}
+function copyReport(){
+ const a=window._lastAnalysis;if(!a)return;
+ const p=getPatient(a.patientId);
+ let t=`MediScribe consult — ${p.name} (${new Date(a.ts).toLocaleString()})\nHistory: ${(p.conds||[]).join(", ")||"—"} | Allergies: ${(p.algs||[]).join(", ")||"—"} | Meds: ${(p.meds||[]).join(", ")||"—"}\nMentioned: ${a.mentioned.join(", ")||"—"}\n\nFLAGS:\n`;
+ a.flags.forEach((f,i)=>{t+=`${i+1}. [${f.sev.toUpperCase()}] ${f.title}\n   ${f.reason}\n   Confirmed: ${f.confirmed?"YES":"PENDING"}\n`;});
+ t+=`\nResearch prototype — verify with Lexicomp/Medscape. Not medical advice.`;
+ navigator.clipboard.writeText(t).then(()=>alert("Report copied — doctor/pharmacist ko bhej do.")).catch(()=>alert("Copy failed — manually select karo."));
+}
+function saveConsult(){
+ const a=window._lastAnalysis;if(!a){alert("Pehle Analyze dabao.");return;}
+ const all=store.get("mediscribe_consults_v1",[]);
+ all.unshift({id:"c"+Date.now(),patientId:a.patientId,ts:a.ts,tx:a.tx,mentioned:a.mentioned,flags:a.flags});
+ store.set("mediscribe_consults_v1",all);
+ alert("Consultation save ho gayi.");renderHistory();
+}
+/* ---------- history ---------- */
+function renderHistory(){
+ const pid=$("h-patient").value;
+ const all=store.get("mediscribe_consults_v1",[]).filter(c=>!pid||c.patientId===pid);
+ if(!all.length){$("hist-list").innerHTML='<p class="muted">Koi saved consultation nahi.</p>';return;}
+ $("hist-list").innerHTML=all.map(c=>{
+  const p=getPatient(c.patientId);
+  const red=c.flags.filter(f=>f.sev==="red").length,pend=c.flags.filter(f=>!f.confirmed&&(f.sev==="red"||f.sev==="amber")).length;
+  return `<div class="card"><b>${p?p.name:"(deleted)"}</b> <span class="muted">${new Date(c.ts).toLocaleString()}</span><br>
+  <span class="badge b-red">${red} red</span> <span class="badge ${pend?"b-amber":"b-ok"}">${pend} pending confirm</span>
+  <div class="kv" style="margin-top:6px"><i>"${c.tx.slice(0,140)}${c.tx.length>140?"…":""}"</i></div>
+  ${c.flags.map((f,i)=>`<div class="kv">${f.sev==="red"?"⛔":f.sev==="amber"?"⚠️":"ℹ️"} ${f.title}
+   <label style="display:inline;font-weight:400"><input type="checkbox" ${f.confirmed?"checked":""} onchange="toggleConfirm('${c.id}',${i},this.checked)"> confirmed</label></div>`).join("")}
+  </div>`;}).join("");
+}
+function toggleConfirm(cid,idx,val){
+ const all=store.get("mediscribe_consults_v1",[]);
+ const c=all.find(x=>x.id===cid);if(c){c.flags[idx].confirmed=val;store.set("mediscribe_consults_v1",all);renderHistory();}
+}
+/* ---------- demo ---------- */
+function loadDemo(){
+ let p=store.get("mediscribe_patients_v1",[]).find(x=>x.name==="Demo Patient");
+ if(!p){p={id:"p-demo",name:"Demo Patient",age:62,sex:"Male",
+  conds:["hypertension","ckd"],algs:["penicillin"],meds:["lisinopril","warfarin"]};
+  const all=store.get("mediscribe_patients_v1",[]);all.push(p);store.set("mediscribe_patients_v1",all);renderPatients();}
+ $("c-patient").value=p.id;renderConsultCtx();
+ $("transcript").value="Doctor: 62-year-old male, hypertension and chronic kidney disease, currently on lisinopril and warfarin. He has knee pain — I am considering ibuprofen for pain relief. Blood pressure still high, thinking of adding spironolactone. He is allergic to penicillin. He also has a dental infection — maybe amoxicillin?";
+ $("analysis").innerHTML='<p class="muted">Demo transcript load ho gaya. <b>Analyze</b> dabao — 6 flags aane chahiye (ibuprofen×warfarin, ibuprofen×CKD, ibuprofen×lisinopril, spironolactone×lisinopril, spironolactone×CKD, amoxicillin×penicillin allergy).</p>';
+}
+/* ---------- init ---------- */
+$("p-alg-custom").addEventListener("keydown",e=>{if(e.key==="Enter"){addAlg(e.target.value);e.target.value="";}});
+$("p-med-input").addEventListener("keydown",e=>{if(e.key==="Enter"){addMed(e.target.value);e.target.value="";}});
+initPickers();renderPatients();
+</script>
+</body>
+</html>
