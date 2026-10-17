@@ -19,6 +19,14 @@ from app.discovery.routes import router as discovery_router
 from app.expiry.routes import router as expiry_router
 from app.pgx.routes import router as pgx_router
 from app.drugsafety.routes import router as drugsafety_router
+from app.iq.routes import router as iq_router
+from app.style.routes import router as style_router
+from app.strait_signal.routes import router as strait_signal_router
+from app.apkaudit.routes import router as apkaudit_router
+from app.pharma_ai.routes import router as pharma_ai_router
+from app.receptionist.routes import router as receptionist_router
+from app.content.routes import router as content_router
+from app.strait_signal import collector as strait_signal_collector
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,9 +34,13 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(app: FastAPI):
     t1 = asyncio.create_task(nsg_reminders.loop_forever(60))
     t2 = asyncio.create_task(reviews_engine.loop_forever(60))
+    t3 = asyncio.create_task(strait_signal_collector.run_forever())
+    t4 = asyncio.create_task(strait_signal_collector.detect_forever())
     yield
     t1.cancel()
     t2.cancel()
+    t3.cancel()
+    t4.cancel()
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(saas_router)
@@ -41,6 +53,13 @@ app.include_router(discovery_router)
 app.include_router(expiry_router)
 app.include_router(pgx_router)
 app.include_router(drugsafety_router)
+app.include_router(iq_router)
+app.include_router(style_router)
+app.include_router(strait_signal_router)
+app.include_router(apkaudit_router)
+app.include_router(pharma_ai_router)
+app.include_router(receptionist_router)
+app.include_router(content_router)
 
 WHATSAPP = "https://wa.me/923116925020?text=Hi!%20I%27m%20interested%20in%20the%2024%2F7%20AI%20receptionist%20for%20our%20clinic."
 DEMO_URL = "https://clinic-demo.fastapicloud.dev/demo"
