@@ -254,6 +254,8 @@ def index(request: Request):
 <li>Rendering queue par hoti hai — <b>5–20 minute</b> lagte hain (status chat me milega).</li>
 <li><b>AI text-to-video nahi</b> — AI-assisted: research, script, AI images + voiceover.</li>
 <li><b>Auto-publishing nahi</b> — video download karo, TikTok/IG/YouTube par khud upload karo.</li>
+<li><b>Narration (v1):</b> English — scripts are auto-written in English, so the
+voiceover is English. Urdu narration needs Urdu-script scripts (v2).</li>
 <li>Files <b>30 din</b> baad auto-delete — save karna zaroori.</li>
 </ul>
 </details>
