@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ur"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IQLab — Cognitive Fitness</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+.card{background:#1e293b;border-radius:14px;padding:20px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+h1{font-size:1.6em;margin:.2em 0}h2{font-size:1.2em;margin:.3em 0}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:10px;
+  background:#3b82f6;color:#fff;font-size:1.05em;font-weight:600;cursor:pointer}
+.btn:hover{background:#2563eb}.btn.ghost{background:#334155}.btn.green{background:#16a34a}
+.btn:disabled{opacity:.5;cursor:default}
+.opt{display:block;width:100%;text-align:left;padding:12px;margin:8px 0;border:2px solid #334155;
+  border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:1em;cursor:pointer}
+.opt:hover{border-color:#3b82f6}.opt svg{pointer-events:none;max-width:100%}
+.opt.correct{border-color:#16a34a;background:#052e16}.opt.wrong{border-color:#dc2626;background:#450a0a}
+input[type=text]{width:100%;padding:14px;font-size:1.2em;border-radius:10px;border:2px solid #334155;
+  background:#0f172a;color:#fff;margin:8px 0;text-align:center;letter-spacing:2px}
+.bar{height:10px;background:#334155;border-radius:5px;overflow:hidden;margin:6px 0}
+.bar>div{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6)}
+.badge{display:inline-block;background:#422006;color:#fdba74;border-radius:20px;padding:6px 12px;margin:4px;font-size:.85em}
+.muted{color:#94a3b8;font-size:.9em}.big{font-size:2.6em;font-weight:800}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.qmeta{display:flex;justify-content:space-between;color:#94a3b8;font-size:.85em;margin-bottom:8px}
+.stim{font-size:3em;text-align:center;padding:30px 0;letter-spacing:10px;min-height:130px}
+.stroop-word{font-size:3em;font-weight:800;text-align:center;padding:26px 0;min-height:120px}
+.hidden{display:none!important}
+.note{background:#1c1917;border-left:4px solid #f59e0b;padding:12px;border-radius:0 10px 10px 0;margin:12px 0;font-size:.92em}
+.keytable{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.keycell{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 12px;font-size:1.3em}
+.items-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0;font-size:1.6em}
+.cbtn{flex:1 1 40%;padding:14px;margin:4px;border:0;border-radius:10px;font-size:1.1em;font-weight:700;color:#fff;cursor:pointer}
+.hist-row{padding:6px 0;border-bottom:1px solid #334155}
+svg text{fill:#e2e8f0}
+</style></head><body><div class="wrap">
+
+<!-- HOME -->
+<div id="s-home">
+  <div class="card" style="text-align:center">
+    <div style="font-size:3em">🧠</div>
+    <h1>IQLab</h1>
+    <p class="muted">Cognitive fitness — test karo, train karo, track karo.</p>
+  </div>
+  <div class="note"><b>Imaandaar baat:</b> ye clinical IQ test (WAIS) nahi hai. Score <b>cognitive fitness ka andaza</b> hai, taqreeban 80–145 range me. Asal IQ (g-factor) training se zyada nahi badalta — lekin <b>working memory, processing speed, focus aur pattern-recognition waqai train hote hain</b>, aur yehi asal faida hai.</div>
+  <div class="card">
+    <button class="btn" onclick="startAssess()">📝 Full Assessment (15 sawal)</button>
+    <button class="btn ghost" onclick="show('s-train')">🏋️ Training Mode</button>
+    <button class="btn ghost" onclick="loadDash()">📊 Meri Progress</button>
+  </div>
+  <div class="card"><h2>13 test styles</h2>
+    <p class="muted">Matrix Reasoning · Number Series · Spatial Rotation · Odd One Out · Pattern Completion · Verbal Analogy · Synonyms · Odd Word Out · Digit Span · N-Back Memory · Stroop Test · Symbol Coding · Arithmetic</p>
+  </div>
+</div>
+
+<!-- TRAIN -->
+<div id="s-train" class="hidden">
+  <div class="card"><h2>🏋️ Training — domain chuno</h2>
+    <p class="muted">Difficulty khud adjust hogi (adaptive levels 1–10). Har session me 8 sawal.</p>
+    <div id="domain-btns"></div>
+    <button class="btn ghost" onclick="show('s-home')">← Wapas</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="s-quiz" class="hidden">
+  <div class="card">
+    <div class="qmeta"><span id="q-type"></span><span id="q-count"></span></div>
+    <div class="bar"><div id="q-bar" style="width:0%"></div></div>
+    <h2 id="q-prompt"></h2>
+    <div id="q-visual"></div>
+    <div id="q-body"></div>
+    <div id="q-feed" class="muted" style="margin-top:10px;min-height:1.4em"></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="s-results" class="hidden">
+  <div class="card" style="text-align:center">
+    <h2>Assessment mukammal! 🎉</h2>
+    <div class="big" id="r-iq">—</div>
+    <div class="muted" id="r-band"></div>
+    <div id="r-domains" style="text-align:left;margin-top:12px"></div>
+  </div>
+  <div class="card"><h2>🎯 Target set karo</h2>
+    <p class="muted">Target IQ chuno (90–145). Streak tab tak chalegi jab tak target hit na ho.</p>
+    <div class="row">
+      <input type="text" id="target-in" value="120" inputmode="numeric" style="letter-spacing:0">
+      <button class="btn green" onclick="setTarget()">Set</button>
+    </div>
+    <div id="target-msg" class="muted"></div>
+  </div>
+  <div class="card">
+    <button class="btn" onclick="show('s-train')">Training shuru karo →</button>
+    <button class="btn ghost" onclick="show('s-home')">Home</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="s-dash" class="hidden">
+  <div class="card" style="text-align:center">
+    <h2>📊 Meri Progress</h2>
+    <div class="big" id="d-iq">—</div><div class="muted" id="d-band"></div>
+    <p>🔥 Streak: <b id="d-streak">0</b> din</p>
+    <p>🎯 Target: <b id="d-target">120</b> <span id="d-hit"></span></p>
+    <div id="d-badges"></div>
+  </div>
+  <div class="card"><h2>Domains</h2><div id="d-domains"></div></div>
+  <div class="card"><h2>History</h2><div id="d-hist"></div></div>
+  <div class="card"><button class="btn ghost" onclick="show('s-home')">← Wapas</button></div>
+</div>
+
+</div><script>
+const $=id=>document.getElementById(id);
+function show(id){["s-home","s-train","s-quiz","s-results","s-dash"].forEach(s=>$(s).classList.add("hidden"));$(id).classList.remove("hidden");window.scrollTo(0,0);}
+let Q=null, mode="assess", idx=0, domain="fluid", trainCount=0, results=[], locked=false;
+
+const DOMAINS=[["fluid","Fluid Reasoning"],["verbal","Verbal"],["memory","Working Memory"],["speed","Processing Speed"],["quant","Quantitative"]];
+$("domain-btns").innerHTML=DOMAINS.map(d=>`<button class="btn" onclick="startTrain('${d[0]}')">${d[1]}</button>`).join("");
+
+async function api(p,m,b){
+  let r=await fetch(p,{method:m,headers:{"Content-Type":"application/json"},body:b?JSON.stringify(b):undefined});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+
+async function startAssess(){mode="assess";idx=0;results=[];await nextQ();}
+async function startTrain(d){mode="train";domain=d;trainCount=0;results=[];await nextQ();}
+
+async function nextQ(){
+  show("s-quiz");$("q-feed").innerHTML="";locked=false;
+  try{
+    let body=mode==="assess"?{mode:mode,idx:idx}:{mode:mode,domain:domain};
+    Q=await api("/iq/api/question","POST",body);
+  }catch(e){$("q-prompt").textContent="Error: server se rabta nahi ho saka.";return;}
+  if(Q.done){finishAssess();return;}
+  $("q-type").textContent=(Q.qtype_ur||Q.qtype)+" · Level "+Q.level;
+  $("q-count").textContent=mode==="assess"?((Q.progress?Q.progress.idx+1:idx+1)+" / "+(Q.progress?Q.progress.total:15)):("Training #"+(trainCount+1)+" / 8");
+  let pct=mode==="assess"?((Q.progress?Q.progress.idx+1:idx+1)/(Q.progress?Q.progress.total:15)*100):(trainCount/8*100);
+  $("q-bar").style.width=Math.min(pct,100)+"%";
+  $("q-prompt").innerHTML=Q.prompt||"";
+  $("q-visual").innerHTML=Q.visual||"";
+  renderBody();
+}
+
+function renderBody(){
+  const b=$("q-body");b.innerHTML="";
+  if(Q.input==="nback")return renderNback(b);
+  if(Q.input==="stroop")return renderStroop(b);
+  if(Q.qtype==="digit_span")return renderDigitSpan(b);
+  if(Q.qtype==="symbol_coding")return renderSymbolCoding(b);
+  if(Q.input===true)return renderText(b);
+  // MCQ
+  (Q.options||[]).forEach((o,i)=>{
+    let btn=document.createElement("button");btn.className="opt";btn.innerHTML=o;
+    btn.onclick=()=>submitMCQ(i,btn);b.appendChild(btn);
+  });
+}
+
+async function submitMCQ(i,btn){
+  if(locked)return;locked=true;
+  document.querySelectorAll(".opt").forEach(x=>x.style.pointerEvents="none");
+  let r=await api("/iq/api/answer","POST",{token:Q.token,response:i});
+  btn.classList.add(r.is_correct?"correct":"wrong");
+  $("q-feed").innerHTML=r.is_correct?"✅ Sahi!":"❌ Ghalat";
+  results.push(r);
+  setTimeout(advance,900);
+}
+
+function renderText(b){
+  b.innerHTML='<input type="text" id="tin" placeholder="jawab likho" autocomplete="off">'
+    +'<button class="btn green" id="tsub">Submit</button>';
+  $("tsub").onclick=async()=>{
+    if(locked)return;locked=true;
+    let r=await api("/iq/api/answer","POST",{token:Q.token,response:$("tin").value});
+    $("q-feed").innerHTML=r.is_correct?"✅ Sahi!":"❌ Ghalat";
+    results.push(r);setTimeout(advance,900);
+  };
+  $("tin").addEventListener("keydown",e=>{if(e.key==="Enter")$("tsub").click();});
+  setTimeout(()=>{try{$("tin").focus();}catch(e){}},100);
+}
+
+function renderDigitSpan(b){
+  b.innerHTML='<div class="stim" id="dstim">…</div><div class="muted" style="text-align:center">Digits ghaur se dekho, phir likho.</div>';
+  let i=0,iv=setInterval(()=>{
+    if(i>=(Q.digits||"").length){clearInterval(iv);renderText(b);return;}
+    $("dstim").textContent=Q.digits[i];i++;
+  },900);
+}
+
+function renderSymbolCoding(b){
+  let keyHtml=Object.entries(Q.key||{}).map(([s,d])=>'<span class="keycell">'+s+' = <b>'+d+'</b></span>').join("");
+  let itemsHtml=(Q.items||[]).map(s=>'<span>'+s+'</span>').join("");
+  b.innerHTML='<div class="keytable">'+keyHtml+'</div>'
+    +'<div class="items-row">'+itemsHtml+'</div>'
+    +'<div class="muted" style="text-align:center">Har symbol ka number tartib me likho (comma se alag, misal: 3,7,1)</div>'
+    +'<input type="text" id="tin" placeholder="3,7,1" autocomplete="off">'
+    +'<button class="btn green" id="tsub">Submit</button>';
+  $("tsub").onclick=async()=>{
+    if(locked)return;locked=true;
+    let r=await api("/iq/api/answer","POST",{token:Q.token,response:$("tin").value});
+    $("q-feed").innerHTML=r.is_correct?"✅ Sahi!":"❌ Ghalat";
+    results.push(r);setTimeout(advance,900);
+  };
+  setTimeout(()=>{try{$("tin").focus();}catch(e){}},100);
+}
+
+function renderNback(b){
+  let L=Q.letters||[],n=Q.n||1,resp=[],i=0;
+  b.innerHTML='<div class="stim" id="nstim">…</div>'
+    +'<div class="row hidden" id="nbtns"><button class="btn green" id="nyes">HAAN — same hai</button>'
+    +'<button class="btn ghost" id="nno">NAA — alag hai</button></div>'
+    +'<div class="muted" style="text-align:center" id="nprog"></div>';
+  $("nyes").onclick=()=>{resp.push(true);i++;step();};
+  $("nno").onclick=()=>{resp.push(false);i++;step();};
+  function step(){
+    if(i>=L.length){finish();return;}
+    $("nstim").textContent=L[i];
+    $("nprog").textContent=(i+1)+" / "+L.length;
+    $("nbtns").classList.toggle("hidden",i<n);
+    if(i<n){setTimeout(()=>{i++;step();},1100);}
+  }
+  async function finish(){
+    $("nbtns").classList.add("hidden");
+    let r=await api("/iq/api/answer","POST",{token:Q.token,response:resp});
+    $("q-feed").innerHTML="Score: "+r.correct+"/"+r.total;
+    results.push(r);setTimeout(advance,1400);
+  }
+  step();
+}
+
+function renderStroop(b){
+  let T=Q.trials||[],resp=[],i=0;
+  const NAMES=["LAAL","NEELA","HARA","PEELA"];
+  b.innerHTML='<div class="stroop-word" id="sw"></div><div class="row" id="sbtns" style="flex-wrap:wrap"></div>'
+    +'<div class="muted" style="text-align:center" id="sprog"></div>'
+    +'<div class="muted" style="text-align:center">Lafz NAHI — jis <b>rang</b> me likha hai wo dabao!</div>';
+  NAMES.forEach(cn=>{
+    let btn=document.createElement("button");btn.className="cbtn";btn.textContent=cn;
+    btn.style.background={LAAL:"#c0392b",NEELA:"#2980b9",HARA:"#27ae60",PEELA:"#d4a017"}[cn];
+    btn.onclick=()=>{resp.push(cn);i++;step();};$("sbtns").appendChild(btn);
+  });
+  function step(){
+    if(i>=T.length){finish();return;}
+    let t=T[i];$("sw").textContent=t.word;$("sw").style.color=t.ink;
+    $("sprog").textContent=(i+1)+" / "+T.length;
+  }
+  async function finish(){
+    let r=await api("/iq/api/answer","POST",{token:Q.token,response:resp});
+    $("q-feed").innerHTML="Score: "+r.correct+"/"+r.total;
+    results.push(r);setTimeout(advance,1400);
+  }
+  step();
+}
+
+async function advance(){
+  if(mode==="assess"){idx++;await nextQ();}
+  else{trainCount++;if(trainCount>=8){loadDash();}else await nextQ();}
+}
+
+async function finishAssess(){
+  try{
+    let d=await api("/iq/api/dashboard","GET");
+    $("r-iq").textContent=(d.latest_iq||d.iq||"—");
+    $("r-band").textContent=d.band||"";
+    $("r-domains").innerHTML=Object.entries(d.domains||{}).map(([k,v])=>
+      '<div>'+((d.domain_names||{})[k]||k)+'<div class="bar"><div style="width:'+v.avg+'%"></div></div>'
+      +'<span class="muted">'+v.avg+'% · level '+v.max_level+'</span></div>').join("")||'<span class="muted">—</span>';
+    if((d.new_badges||[]).length)setTimeout(()=>alert("🏅 Naya badge: "+d.new_badges.map(b=>b.name).join(", ")),400);
+    show("s-results");
+  }catch(e){show("s-home");}
+}
+
+async function setTarget(){
+  let t=parseInt($("target-in").value)||120;
+  try{
+    let r=await api("/iq/api/target","POST",{target_iq:t});
+    $("target-msg").textContent="✅ Target set: "+r.target;
+  }catch(e){$("target-msg").textContent="Error ho gaya.";}
+}
+
+async function loadDash(){
+  try{
+    let d=await api("/iq/api/dashboard","GET");
+    show("s-dash");
+    $("d-iq").textContent=d.iq||"—";
+    $("d-band").textContent=d.band||"pehle assessment do";
+    $("d-streak").textContent=d.streak||0;
+    $("d-target").textContent=d.target||120;
+    $("d-hit").textContent=d.target_hit?"🏆 TARGET HIT!":"";
+    $("d-badges").innerHTML=(d.badges||[]).map(b=>'<span class="badge" title="'+(b.desc||"")+'">🏅 '+b.name+'</span>').join("")||'<span class="muted">Abhi koi badge nahi</span>';
+    $("d-domains").innerHTML=Object.entries(d.domains||{}).map(([k,v])=>
+      '<div>'+((d.domain_names||{})[k]||k)+'<div class="bar"><div style="width:'+v.avg+'%"></div></div>'
+      +'<span class="muted">'+v.avg+'% · '+v.n+' attempts · level '+v.max_level+'</span></div>').join("")||'<span class="muted">—</span>';
+    $("d-hist").innerHTML=(d.history||[]).map(h=>
+      '<div class="hist-row">'+h.day+': <b>'+h.avg+'%</b> <span class="muted">('+h.n+' sawal)</span></div>').join("")||'<span class="muted">—</span>';
+    if((d.new_badges||[]).length)setTimeout(()=>alert("🏅 Naya badge: "+d.new_badges.map(b=>b.name).join(", ")),400);
+  }catch(e){show("s-home");}
+}
+</script></body></html>

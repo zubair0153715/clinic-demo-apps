@@ -88,15 +88,21 @@ def _pdb_path(pdb_id):
 
 
 def _ligand_center(pdb_path):
-    """Centroid of the first drug-like HETATM ligand (skips waters/ions/cryo junk)."""
+    """Centroid of the first drug-like HETATM ligand (skips waters/ions/cryo junk).
+
+    Groups by full residue identity (name + chain + seqnum), not just residue
+    name, so multimeric PDBs (e.g. 2R4F tetramer) don't average the centroids
+    of symmetry-related ligand copies into empty space.
+    """
     current_res = None
     res_atoms = []
     xs = []
     with open(pdb_path) as f:
         for line in f:
             if line.startswith("HETATM"):
-                res = line[17:20].strip()
-                if res in _JUNK_LIGANDS:
+                # residue identity = name + chain + seqnum (cols 18-20, 22, 23-26)
+                res = (line[17:20].strip(), line[21].strip(), line[22:26].strip())
+                if res[0] in _JUNK_LIGANDS:
                     continue
                 if res != current_res:
                     if res_atoms and len(res_atoms) >= 6:

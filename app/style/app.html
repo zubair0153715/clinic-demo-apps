@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ur"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Style Advisor — Apna Style, Apni Photo Par</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.wrap{max-width:680px;margin:0 auto;padding:20px}
+.card{background:#1e293b;border-radius:14px;padding:20px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+h1{font-size:1.6em;margin:.2em 0}h2{font-size:1.2em;margin:.4em 0 .6em}
+h3{font-size:1.05em;margin:.6em 0 .3em}
+.btn{display:block;width:100%;padding:14px;margin:10px 0;border:0;border-radius:10px;
+  background:#8b5cf6;color:#fff;font-size:1.05em;font-weight:600;cursor:pointer}
+.btn:hover{background:#7c3aed}.btn:disabled{background:#475569;cursor:wait}
+.btn.ghost{background:#334155}
+.btn.small{padding:9px;font-size:.92em;margin:6px 0}
+.muted{color:#94a3b8;font-size:.9em}
+.note{background:#1c1917;border-left:4px solid #f59e0b;padding:12px;border-radius:0 10px 10px 0;margin:12px 0;font-size:.92em}
+.best{background:#052e16;border-left:4px solid #22c55e;padding:14px;border-radius:0 12px 12px 0;margin:12px 0}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.pick{border:2px solid #334155;border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;background:#0f172a}
+.pick.sel{border-color:#8b5cf6;background:#2e1065}
+.pick svg{display:block;margin:0 auto}
+.pick small{display:block;font-size:.72em;color:#cbd5e1;margin-top:4px;line-height:1.25}
+.pick .em{font-size:1.5em}
+input[type=file]{width:100%;padding:12px;border:2px dashed #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;margin:8px 0}
+input[type=number]{width:100%;padding:12px;font-size:1.05em;border-radius:10px;border:2px solid #334155;background:#0f172a;color:#fff;margin:8px 0}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label.lbl{display:block;font-size:.85em;color:#94a3b8;margin:10px 0 2px}
+#preview{max-width:180px;border-radius:10px;display:none;margin:8px auto}
+#vizimg{max-width:100%;border-radius:12px;display:none;margin:10px auto}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.sw{border-radius:10px;overflow:hidden;border:1px solid #334155}
+.sw .c{height:52px;position:relative}
+.sw small{display:block;padding:5px;font-size:.68em;background:#0f172a;text-align:center;line-height:1.3}
+.avoid .sw{position:relative;opacity:.85}
+.avoid .sw .c::after{content:"✕";position:absolute;top:2px;right:6px;color:#fff;font-weight:800;text-shadow:0 0 4px #000}
+.item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #334155;font-size:.95em}
+.dot{width:22px;height:22px;border-radius:50%;border:1px solid #64748b;flex-shrink:0}
+.hidden{display:none!important}
+.outfit,.hair,.groom{border:1px solid #334155;border-radius:10px;padding:12px;margin:10px 0;background:#0f172a}
+.groom{position:relative}
+.badge{display:inline-block;background:#22c55e;color:#052e16;font-size:.72em;font-weight:700;border-radius:20px;padding:3px 10px;margin-left:6px}
+.err{background:#450a0a;border:1px solid #dc2626;border-radius:10px;padding:12px;margin:12px 0}
+.spin{text-align:center;padding:30px}.spin div{font-size:2.4em;animation:sp 1.2s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tip{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;margin:6px 0;font-size:.92em}
+.stepbar{display:flex;gap:6px;margin:12px 0}
+.stepbar div{flex:1;height:6px;border-radius:3px;background:#334155}
+.stepbar div.on{background:#8b5cf6}
+</style></head><body><div class="wrap">
+
+<div class="card" style="text-align:center">
+  <div style="font-size:2.6em">🪞</div>
+  <h1>Style Advisor</h1>
+  <p class="muted">Photo upload karo, chand sawalon ke jawab do — mooch, dadhi, hairstyle, kapre aur rangon ki personalized guidance pao. Sab free, sab science-based.</p>
+</div>
+
+<div class="note"><b>Imaandaar baat:</b> ye rule-based style guidance hai (muft). "Apni photo par dekho" wala AI step sirf tab chalega jab owner apni free Gemini API key add karega — uske baghair bhi neeche wali poori guidance kaam karti hai.</div>
+
+<!-- STEP 1: photo -->
+<div id="s1" class="card">
+  <div class="stepbar"><div class="on"></div><div></div><div></div></div>
+  <h2>Step 1 — Apni photo upload karo</h2>
+  <p class="muted">Saaf, seedhi face photo — natural light me behtareen. Photo save <b>nahi</b> hoti, sirf analyze hoti hai.</p>
+  <input type="file" id="photo" accept="image/jpeg,image/png">
+  <img id="preview" alt="preview">
+  <button class="btn" onclick="toStep2()">Aage badho →</button>
+  <div id="err1"></div>
+</div>
+
+<!-- STEP 2: questionnaire -->
+<div id="s2" class="card hidden">
+  <div class="stepbar"><div class="on"></div><div class="on"></div><div></div></div>
+  <h2>Step 2 — Chand sawal</h2>
+
+  <div class="row3">
+    <div><label class="lbl">Qad (cm)</label><input type="number" id="height" placeholder="173" min="120" max="230"></div>
+    <div><label class="lbl">Wazan (kg)</label><input type="number" id="weight" placeholder="65" min="30" max="200"></div>
+    <div><label class="lbl">Umar</label><input type="number" id="age" placeholder="22" min="13" max="100"></div>
+  </div>
+
+  <label class="lbl">Gender</label>
+  <div class="grid2" id="genders"></div>
+
+  <label class="lbl">Chehre ki shape (sheeshe me dekho)</label>
+  <div class="grid5" id="faces"></div>
+
+  <label class="lbl">Grooming preference</label>
+  <div class="grid3" id="grooms"></div>
+
+  <label class="lbl">Mauqa (occasion)</label>
+  <div class="grid4" id="occs"></div>
+
+  <button class="btn" id="go" onclick="analyze()">✨ Mera Style Analysis Karo</button>
+  <button class="btn ghost" onclick="back1()">← Wapas</button>
+  <div id="err2"></div>
+</div>
+
+<div id="loading" class="card hidden"><div class="spin"><div>🎨</div><p class="muted">Tumhara style tayyar ho raha hai…</p></div></div>
+
+<div id="s3wrap" class="hidden">
+  <div class="card"><div class="stepbar"><div class="on"></div><div class="on"></div><div class="on"></div></div></div>
+  <div id="results"></div>
+</div>
+
+</div><script>
+const $=id=>document.getElementById(id);
+const FACES=[
+ ["oval","Oval<br>beiza","<ellipse cx='50' cy='55' rx='32' ry='42' fill='#8b5cf6' opacity='.55'/>"],
+ ["round","Round<br>gol","<circle cx='50' cy='55' r='36' fill='#8b5cf6' opacity='.55'/>"],
+ ["square","Square<br>murabba","<rect x='18' y='20' width='64' height='70' rx='10' fill='#8b5cf6' opacity='.55'/>"],
+ ["heart","Heart<br>dil","<path d='M18,28 Q50,14 82,28 L64,86 Q50,94 36,86 Z' fill='#8b5cf6' opacity='.55'/>"],
+ ["oblong","Oblong<br>lamba","<ellipse cx='50' cy='55' rx='26' ry='46' fill='#8b5cf6' opacity='.55'/>"],
+];
+const GENDERS=[["male","👨<br>Mard"],["female","👩<br>Aurat"]];
+const GROOMS=[["clean","🪒<br>Clean"],["moustache","🥸<br>Mooch"],["beard","🧔<br>Dadhi"]];
+const OCCS=[["daily","👕<br>Rozmarra"],["office","💼<br>Office"],["event","🎉<br>Event"],["wedding","💒<br>Shaadi"]];
+let face="oval", gender="male", groom="beard", occ="daily", photoFile=null;
+
+function mkgrid(id,items,def,cb){
+  $(id).innerHTML=items.map((x,i)=>`<div class="pick${x[0]===def?" sel":""}" onclick="pick('${id}','${x[0]}',this,${cb.name})"><div class="em">${x[1].split("<br>")[0]}</div><small>${x[1].split("<br>")[1]}</small></div>`).join("");
+}
+function pick(id,v,el,cb){document.querySelectorAll("#"+id+" .pick").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");cb(v);}
+function setGender(v){gender=v;} function setFace(v){face=v;} function setGroom(v){groom=v;} function setOcc(v){occ=v;}
+mkgrid("genders",GENDERS,"male",setGender);
+mkgrid("faces",[["oval","Oval<br>beiza",""],["round","Round<br>gol",""],["square","Square<br>murabba",""],["heart","Heart<br>dil",""],["oblong","Oblong<br>lamba",""]],"oval",setFace);
+// face svg grid (custom shapes)
+$("faces").innerHTML=FACES.map((f,i)=>`<div class="pick${i===0?" sel":""}" onclick="pick('faces','${f[0]}',this,setFace)"><svg viewBox="0 0 100 110" width="44" height="48">${f[2]}</svg><small>${f[1]}</small></div>`).join("");
+mkgrid("grooms",GROOMS,"beard",setGroom);
+mkgrid("occs",OCCS,"daily",setOcc);
+
+$("photo").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  photoFile=f;
+  const r=new FileReader();r.onload=ev=>{$("preview").src=ev.target.result;$("preview").style.display="block";};r.readAsDataURL(f);
+});
+function toStep2(){
+  $("err1").innerHTML="";
+  const f=$("photo").files[0];
+  if(!f){$("err1").innerHTML='<div class="err">Pehle apni photo upload karo 📸</div>';return;}
+  if(f.size>5*1024*1024){$("err1").innerHTML='<div class="err">Photo 5MB se bari hai — chhoti photo try karo.</div>';return;}
+  $("s1").classList.add("hidden");$("s2").classList.remove("hidden");window.scrollTo(0,0);
+}
+function back1(){$("s2").classList.add("hidden");$("s1").classList.remove("hidden");window.scrollTo(0,0);}
+
+function sw(c){return `<div class="sw"><div class="c" style="background:${c.hex}"></div><small>${c.name}<br><span class="muted">${c.hex}</span></small></div>`;}
+function groomCard(g,type){
+  const badge=g.best_for_you?'<span class="badge">Tumhare liye best</span>':"";
+  return `<div class="groom"><h3>${g.name}${badge}</h3><p class="muted">${g.ur}</p><p>${g.desc}</p>
+  <p class="muted">💡 ${g.tip}</p>
+  <button class="btn small ghost" onclick="visualize('${type}','${g.id}')">📸 Is style me apni photo dekho</button></div>`;
+}
+
+async function analyze(){
+  $("err2").innerHTML="";
+  const fd=new FormData();
+  fd.append("photo",photoFile||$("photo").files[0]);
+  fd.append("face_shape",face);fd.append("gender",gender);fd.append("grooming",groom);
+  fd.append("occasion",occ);
+  fd.append("height",$("height").value||"");fd.append("weight",$("weight").value||"");fd.append("age",$("age").value||"");
+  $("s2").classList.add("hidden");$("loading").classList.remove("hidden");window.scrollTo(0,0);
+  try{
+    const r=await fetch("/style/api/analyze",{method:"POST",body:fd});
+    const d=await r.json();
+    $("loading").classList.add("hidden");
+    if(!r.ok){$("s2").classList.remove("hidden");$("err2").innerHTML=`<div class="err">${d.error||"Kuch ghalat hua"}</div>`;return;}
+    window._last=d; render(d);
+    $("s3wrap").classList.remove("hidden");window.scrollTo(0,0);
+  }catch(e){$("loading").classList.add("hidden");$("s2").classList.remove("hidden");$("err2").innerHTML='<div class="err">Network error — dobara try karo.</div>';}
+}
+
+function render(d){
+  const bp=d.best_pick;
+  const fit=(d.fit_tips||[]).map(t=>`<div class="tip">📏 ${t}</div>`).join("");
+  const body=d.body?`<p><b>Body type:</b> ${d.body.band_ur} <span class="muted">(BMI ${d.body.bmi})</span></p>`:"";
+  const mo=d.moustaches.length?`<div class="card"><h2>🥸 Mooch Styles</h2>
+    <p class="muted">Apne chehre ke hisaab se ranking — "Tumhare liye best" wali sab se upar.</p>
+    ${d.moustaches.map(g=>groomCard(g,"moustache")).join("")}</div>`:"";
+  const be=d.beards.length?`<div class="card"><h2>🧔 Dadhi Styles</h2>
+    ${d.beards.map(g=>groomCard(g,"beard")).join("")}</div>`:"";
+  const hairPick=bp.hairstyle?`<div class="tip">💇 <b>Hair:</b> ${bp.hairstyle.name} — ${bp.hairstyle.desc}</div>`:"";
+  $("results").innerHTML=`
+  <div class="best"><h2>⭐ Tumhara Best Pick</h2><h3>${bp.headline}</h3><p>${bp.why}</p>
+    ${bp.female_note?`<p class="muted">${bp.female_note}</p>`:""}
+    <button class="btn" onclick="visualizeBest()">📸 Best pick apni photo par dekho</button>
+    <p class="muted">AI visualization ${d.visualization_available?"tayyar hai":"(filhal band — owner ki Gemini key ka intezar)"}.</p></div>
+  <div class="card"><h2>🧬 Skin Analysis</h2>
+    <p><b>Rangat:</b> ${d.skin.tone_ur}<br><b>Undertone:</b> ${d.skin.undertone_ur}</p>${body}
+    ${d.skin.note?`<p class="muted">⚠️ ${d.skin.note}</p>`:""}
+    <p class="muted">Ye ek andaza hai (heuristic) — professional draping test ki jagah nahi le sakta.</p></div>
+  <div class="card"><h2>🎨 Tumhara Season: ${d.season.ur}</h2><p>${d.season.desc}</p></div>
+  <div class="card"><h2>✅ Best Colors</h2><div class="swatches">${d.palette.best.map(sw).join("")}</div>
+    <h2 style="margin-top:14px">🚫 Avoid</h2><div class="swatches avoid">${d.palette.avoid.map(sw).join("")}</div></div>
+  ${mo}${be}
+  <div class="card"><h2>💇 Hairstyles — ${d.hairstyles.face_ur}</h2><p class="muted">${d.hairstyles.tips}</p>
+    ${d.hairstyles.styles.map(h=>`<div class="hair"><h3>${h.name}</h3><p>${h.desc}</p><p class="muted">🔬 ${h.why}</p></div>`).join("")}</div>
+  <div class="card"><h2>👔 Outfits — ${d.occasion.name} <span class="muted">(3 looks)</span></h2>
+    ${d.occasion_outfits.map(o=>`<div class="outfit"><h3>${o.title}</h3>
+      ${o.items.map(i=>`<div class="item"><span class="dot" style="background:${i.hex}"></span><span><b>${i.piece}:</b> ${i.color}</span></div>`).join("")}
+      <p class="muted">💡 ${o.note}</p></div>`).join("")}</div>
+  ${fit?`<div class="card"><h2>📏 Fit Tips</h2>${hairPick}${fit}</div>`:""}
+  <div class="card"><h2>📸 AI Visualization</h2>
+    <p class="muted">Apni photo par styles laga kar dekho (face same rahega, sirf grooming change hogi).</p>
+    <img id="vizimg" alt="AI visualization"><div id="vizerr"></div><div id="vizload" class="hidden"><div class="spin"><div>✨</div><p class="muted">AI tasveer bana raha hai… (30-60 sec)</p></div></div>
+  </div>
+  <div class="note">${d.honest_note}</div>
+  <div class="card"><button class="btn ghost" onclick="location.reload()">🔄 Nayi photo try karo</button></div>`;
+}
+
+async function doVisualize(mooch, dadhi, hair){
+  $("vizerr").innerHTML="";$("vizimg").style.display="none";
+  $("vizload").classList.remove("hidden");
+  const fd=new FormData();
+  fd.append("photo",photoFile||$("photo").files[0]);
+  fd.append("moustache",mooch||"");fd.append("beard",dadhi||"");fd.append("hairstyle",hair||"");
+  try{
+    const r=await fetch("/style/api/visualize",{method:"POST",body:fd});
+    $("vizload").classList.add("hidden");
+    const ct=r.headers.get("content-type")||"";
+    if(ct.startsWith("image/")){
+      const b=await r.blob();
+      $("vizimg").src=URL.createObjectURL(b);$("vizimg").style.display="block";
+      scrollViz();
+      return;
+    }
+    const d=await r.json();
+    $("vizerr").innerHTML=`<div class="note">⚠️ <b>AI visualization filhal band hai.</b><br>${d.reason||d.error||"dobara try karo"}</div>`;
+  }catch(e){$("vizload").classList.add("hidden");$("vizerr").innerHTML='<div class="err">Network error — dobara try karo.</div>';}
+}
+function visualize(type,id){
+  const d=window._last;if(!d)return;
+  const list=type==="moustache"?d.moustaches:d.beards;
+  const g=list.find(x=>x.id===id);
+  if(type==="moustache") doVisualize(g.name,"","");
+  else doVisualize("",g.name,"");
+  scrollViz();
+}
+function visualizeBest(){
+  const d=window._last;if(!d||!d.best_pick)return;
+  const bp=d.best_pick;
+  doVisualize(bp.moustache?bp.moustache.name:"",bp.beard?bp.beard.name:"",bp.hairstyle?bp.hairstyle.name:"");
+  scrollViz();
+}
+function scrollViz(){setTimeout(()=>{const v=$("vizimg");if(v)v.scrollIntoView({behavior:"smooth",block:"center"});},300);}
+</script></body></html>
