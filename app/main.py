@@ -27,6 +27,7 @@ from app.pharma_ai.routes import router as pharma_ai_router
 from app.receptionist.routes import router as receptionist_router
 from app.content.routes import router as content_router
 from app.hotelpms.routes import router as hotelpms_router
+from app.sehatplate.routes import router as sehatplate_router
 from app.strait_signal import collector as strait_signal_collector
 
 logging.basicConfig(level=logging.INFO)
@@ -62,6 +63,7 @@ app.include_router(pharma_ai_router)
 app.include_router(receptionist_router)
 app.include_router(content_router)
 app.include_router(hotelpms_router)
+app.include_router(sehatplate_router)
 
 WHATSAPP = "https://wa.me/923116925020?text=Hi!%20I%27m%20interested%20in%20the%2024%2F7%20AI%20receptionist%20for%20our%20clinic."
 DEMO_URL = "https://clinic-demo.fastapicloud.dev/demo"
