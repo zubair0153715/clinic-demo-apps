@@ -3,7 +3,7 @@ name = "clinic-demo"
 version = "0.1.0"
 description = "Live demo: 24/7 AI receptionist for clinics (WhatsApp-style)"
 requires-python = ">=3.12"
-dependencies = ["fastapi[standard]>=0.115", "pypdf>=4", "rdkit>=2024.3.1", "websockets>=15", "androguard>=4.1", "rank-bm25>=0.2.2", "qrcode[pil]>=7.4"]
+dependencies = ["fastapi[standard]>=0.115", "pypdf>=4", "rdkit>=2024.3.1", "websockets>=15", "androguard>=4.1", "rank-bm25>=0.2.2", "qrcode[pil]>=7.4", "python-pptx>=1.0.2"]
 
 [build-system]
 requires = ["setuptools>=61"]
