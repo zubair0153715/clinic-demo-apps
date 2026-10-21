@@ -30,6 +30,7 @@ from app.hotelpms.routes import router as hotelpms_router
 from app.sehatplate.routes import router as sehatplate_router
 from app.flowstore.routes import router as flowstore_router
 from app.bayan.routes import router as bayan_router
+from app.jalsa.routes import router as jalsa_router
 from app.strait_signal import collector as strait_signal_collector
 
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +69,7 @@ app.include_router(hotelpms_router)
 app.include_router(sehatplate_router)
 app.include_router(flowstore_router)
 app.include_router(bayan_router)
+app.include_router(jalsa_router)
 
 WHATSAPP = "https://wa.me/923116925020?text=Hi!%20I%27m%20interested%20in%20the%2024%2F7%20AI%20receptionist%20for%20our%20clinic."
 DEMO_URL = "https://clinic-demo.fastapicloud.dev/demo"
