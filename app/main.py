@@ -34,7 +34,9 @@ from app.jalsa.routes import router as jalsa_router
 from app.hisab.routes import router as hisab_router
 from app.tukra.routes import router as tukra_router
 from app.dars.routes import router as dars_router
+from app.ishtehar.routes import router as ishtehar_router
 from app.lablink.routes import router as lablink_router
+from app.stats.routes import router as stats_router
 from app.strait_signal import collector as strait_signal_collector
 
 logging.basicConfig(level=logging.INFO)
@@ -77,7 +79,9 @@ app.include_router(jalsa_router)
 app.include_router(hisab_router)
 app.include_router(tukra_router)
 app.include_router(dars_router)
+app.include_router(ishtehar_router)
 app.include_router(lablink_router)
+app.include_router(stats_router)
 
 WHATSAPP = "https://wa.me/923116925020?text=Hi!%20I%27m%20interested%20in%20the%2024%2F7%20AI%20receptionist%20for%20our%20clinic."
 DEMO_URL = "https://clinic-demo.fastapicloud.dev/demo"

@@ -1,0 +1,1 @@
+"""Ishtehar package."""
