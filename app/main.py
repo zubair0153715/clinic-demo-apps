@@ -35,6 +35,7 @@ from app.hisab.routes import router as hisab_router
 from app.tukra.routes import router as tukra_router
 from app.dars.routes import router as dars_router
 from app.ishtehar.routes import router as ishtehar_router
+from app.quwwat.routes import router as quwwat_router
 from app.lablink.routes import router as lablink_router
 from app.stats.routes import router as stats_router
 from app.strait_signal import collector as strait_signal_collector
@@ -80,6 +81,7 @@ app.include_router(hisab_router)
 app.include_router(tukra_router)
 app.include_router(dars_router)
 app.include_router(ishtehar_router)
+app.include_router(quwwat_router)
 app.include_router(lablink_router)
 app.include_router(stats_router)
 
