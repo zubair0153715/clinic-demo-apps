@@ -65,6 +65,44 @@ def init_db():
                       status TEXT NOT NULL DEFAULT 'applied',
                       confirmation TEXT NOT NULL DEFAULT '',
                       applied_at TEXT NOT NULL DEFAULT '')""")
+        c.execute("""CREATE TABLE IF NOT EXISTS meta
+                     (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '')""")
+
+
+def set_meta(key, value):
+    """Store a small JSON/text blob (config, login checklist)."""
+    init_db()
+    if not isinstance(value, str):
+        value = json.dumps(value)
+    with _conn() as c:
+        c.execute(
+            "INSERT INTO meta (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (key, value))
+
+
+def get_meta(key, default=None):
+    init_db()
+    with _conn() as c:
+        row = c.execute("SELECT value FROM meta WHERE key = ?",
+                        (key,)).fetchone()
+    if not row:
+        return default
+    return row["value"]
+
+
+def get_config():
+    raw = get_meta("config")
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except Exception:
+        return {}
+
+
+def get_login_checklist():
+    return get_meta("login_checklist", "") or ""
 
 
 def get_profile():

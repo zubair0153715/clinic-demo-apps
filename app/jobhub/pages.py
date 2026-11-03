@@ -48,7 +48,8 @@ DASH = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 </div>
 <p style="margin-top:14px"><a class="btn" href="/jobhub/profile">✏️ Edit profile &amp; CV data</a>
 <a class="btn ghost" href="/jobhub/profile" style="margin-left:8px">Profile: __NAME__ · __EMAIL__</a></p>
-<div class="note"><b>How this works:</b> the Scout finds new roles across PK/SA/UAE boards every morning, the Matcher scores fit, the Tailor writes a cover note from your real portfolio, and the Applier submits automatically <b>only</b> where no login is needed (email or guest form). Anything needing your login, a CAPTCHA, or LinkedIn lands in the approval queue below — nothing is submitted without you. Max 4 applications/day.</div>
+<div class="note"><b>How this works:</b> __MODE_TEXT__</div>
+__LINKEDIN_NOTE__
 
 <h2>🎯 Today's matches</h2>
 __MATCHES__
@@ -59,7 +60,10 @@ __QUEUE__
 <h2>✅ Applied</h2>
 __APPLIED__
 
-<p class="muted" style="margin-top:26px">Scope: Pakistan, Saudi Arabia, UAE (+ worldwide-remote Track B/C). Tracks: A bio-AI / regulatory · B AI automation / Python / data · C internships. LinkedIn applying stays approval-gated — automation there risks an account ban. No application is counted as sent until the employer's own page or email confirms it.</p>
+<h2>🔑 One-time login checklist</h2>
+__CHECKLIST__
+
+<p class="muted" style="margin-top:26px">Scope: Pakistan, Saudi Arabia, UAE (+ worldwide-remote Track B/C). Tracks: A bio-AI / regulatory · B AI automation / Python / data · C internships. No application is counted as sent until the employer's own page or email confirms it. A success dialog/page = submitted; no confirmation email/page = unconfirmed, and the log says so.</p>
 </div></body></html>"""
 
 PROFILE_FORM = """<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -126,7 +130,65 @@ def _status_tag(status):
     return f'<span class="tag">{_esc(status or "new")}</span>'
 
 
-def render_dashboard(counts, matches, queue, applied, profile):
+def _linkify(escaped):
+    import re
+    return re.sub(r'(https?://[^\s<]+)',
+                  r'<a href="\1" target="_blank" rel="noopener">\1</a>',
+                  escaped)
+
+
+def _mode_text(config):
+    if (config or {}).get("auto_apply_mode") == "full":
+        return ("<b>⚡ FULL AUTO is ON</b> — the Hub applies by itself, no "
+                "per-application approval. The Scout finds roles, the "
+                "Matcher scores fit, the Tailor writes a cover note from "
+                "your real portfolio, and the Applier submits JD-verified "
+                "matches automatically (email directly; guest forms, "
+                "session-backed portals and LinkedIn Easy Apply via "
+                "browser tasks). Max 4 applications/day across all "
+                "channels. Anything needing a fresh account, a CAPTCHA, or "
+                "your input lands in the approval queue below.")
+    return ("the Scout finds new roles across PK/SA/UAE boards every "
+            "morning, the Matcher scores fit, the Tailor writes a cover "
+            "note from your real portfolio, and the Applier submits "
+            "automatically <b>only</b> where no login is needed (email or "
+            "guest form). Anything needing your login, a CAPTCHA, or "
+            "LinkedIn lands in the approval queue below. Max 4 "
+            "applications/day.")
+
+
+def _linkedin_note(config):
+    li = (config or {}).get("linkedin") or {}
+    if not (config or {}).get("linkedin_auto_apply"):
+        return ('<div class="note"><b>LinkedIn auto-apply: OFF</b> — '
+                'LinkedIn roles stay in the approval queue (account-ban '
+                'risk).</div>')
+    if li.get("paused"):
+        return ('<div class="note" style="background:#fde8e8;border-color:'
+                '#e02424"><b>⛔ LinkedIn auto-apply: PAUSED</b> — a '
+                'restriction warning, verification challenge, or CAPTCHA '
+                'was hit. LinkedIn applying is stopped until you say '
+                'resume. Other channels are unaffected.</div>')
+    return ('<div class="note" style="background:#fff3e0;border-color:'
+            '#f59e0b"><b>⚠️ LinkedIn auto-apply: ON</b> — enabled '
+            '2026-11-03 23:52 PKT by your explicit order, after the '
+            'account restriction/ban risk warning. Easy Apply only, '
+            'strong fits (score ≥ 75), max 1 per run, human-like pacing. '
+            'Any restriction warning, verification challenge, or CAPTCHA '
+            'pauses LinkedIn immediately — the Hub never pushes through.'
+            '</div>')
+
+
+def _checklist_html(checklist):
+    if not (checklist or "").strip():
+        return ('<div class="empty">Login checklist not synced yet — it '
+                'arrives with the next sync from the Hub.</div>')
+    body = _linkify(_esc(checklist)).replace("\n", "<br>\n")
+    return ('<div class="note" style="background:#fff">%s</div>' % body)
+
+
+def render_dashboard(counts, matches, queue, applied, profile,
+                     config=None, checklist=""):
     if matches:
         rows = []
         for m in matches[:50]:
@@ -176,6 +238,9 @@ def render_dashboard(counts, matches, queue, applied, profile):
         applied_html = ('<div class="empty">No applications recorded through the '
                         'Hub yet. Older applications live in the job-hunt log.</div>')
     return (DASH.replace("__CSS__", CSS)
+            .replace("__MODE_TEXT__", _mode_text(config))
+            .replace("__LINKEDIN_NOTE__", _linkedin_note(config))
+            .replace("__CHECKLIST__", _checklist_html(checklist))
             .replace("__APPLIED_TODAY__", str(counts["applied_today"]))
             .replace("__CAP__", str(counts["daily_cap"]))
             .replace("__NEW_MATCHES__", str(counts["new_matches"]))

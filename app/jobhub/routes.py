@@ -29,7 +29,9 @@ def index():
     queue = db.get_queue()
     applied = db.get_applications()
     profile = db.get_profile()
-    return pages.render_dashboard(counts, matches, queue, applied, profile)
+    return pages.render_dashboard(counts, matches, queue, applied, profile,
+                                  config=db.get_config(),
+                                  checklist=db.get_login_checklist())
 
 
 @router.get("/profile", response_class=HTMLResponse)
@@ -90,6 +92,10 @@ async def worker_upsert(request: Request):
     saved_profile = None
     if isinstance(body.get("profile"), dict):
         saved_profile = db.save_profile(body["profile"])
+    if isinstance(body.get("config"), dict):
+        db.set_meta("config", body["config"])
+    if isinstance(body.get("login_checklist"), str):
+        db.set_meta("login_checklist", body["login_checklist"])
     if body.get("replace"):
         db.clear_matches_and_queue()
     n_matches = 0
