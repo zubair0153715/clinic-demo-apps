@@ -90,6 +90,8 @@ async def worker_upsert(request: Request):
     saved_profile = None
     if isinstance(body.get("profile"), dict):
         saved_profile = db.save_profile(body["profile"])
+    if body.get("replace"):
+        db.clear_matches_and_queue()
     n_matches = 0
     for m in body.get("matches", []) or []:
         if isinstance(m, dict) and db.upsert_match(m):

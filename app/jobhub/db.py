@@ -164,6 +164,19 @@ def set_match_status(mid, status, confirmation="", applied_at=""):
     return True
 
 
+def clear_matches_and_queue():
+    """Delete all matches + queue rows (full-sync replace).
+
+    Preserves the profile and the applications table (applied history).
+    Used when the VM pushes a complete snapshot, so stale/junk rows from
+    an earlier buggy sync cannot linger in the dashboard.
+    """
+    init_db()
+    with _conn() as c:
+        c.execute("DELETE FROM matches")
+        c.execute("DELETE FROM queue")
+
+
 def upsert_queue(item):
     init_db()
     qid = item.get("id") or ""
