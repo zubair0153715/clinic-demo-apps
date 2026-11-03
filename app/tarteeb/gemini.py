@@ -39,6 +39,9 @@ def _parse_json_response(text):
     if start >= 0 and end > start:
         return json.loads(cleaned[start:end + 1])
     raise json.JSONDecodeError("no JSON object found", cleaned, 0)
+
+
+def _call(prompt, max_tokens=4000):
     key = _get_key()
     if not key:
         return None, ("AI ke liye GEMINI_API_KEY set nahi hai. "
