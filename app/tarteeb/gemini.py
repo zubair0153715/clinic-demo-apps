@@ -5,6 +5,10 @@ environment AT CALL TIME only, never stored or logged. The prompt
 forbids inventing facts, employers, numbers or results — AI may only
 reword what the user already wrote, and only towards the JD's wording.
 The deterministic tools always work without a key.
+
+Reply format is PLAIN TEXT (a SUMMARY: line + numbered bullets), not
+JSON — model JSON with unescaped quotes/newlines inside strings kept
+failing to parse live, while numbered lines parse robustly.
 """
 
 import json
@@ -23,22 +27,6 @@ def _get_key():
 
 def key_available() -> bool:
     return bool(_get_key())
-
-
-def _parse_json_response(text):
-    """Parse Gemini's reply as JSON, tolerating markdown fences and
-    preamble/trailing prose around the object."""
-    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(),
-                     flags=re.MULTILINE).strip()
-    try:
-        return json.loads(cleaned)
-    except json.JSONDecodeError:
-        pass
-    start = cleaned.find("{")
-    end = cleaned.rfind("}")
-    if start >= 0 and end > start:
-        return json.loads(cleaned[start:end + 1])
-    raise json.JSONDecodeError("no JSON object found", cleaned, 0)
 
 
 def _call(prompt, max_tokens=4000):
@@ -69,12 +57,38 @@ def _call(prompt, max_tokens=4000):
     return text, None
 
 
+def _parse_tailored_lines(text, bullets):
+    """Parse Gemini's plain-text reply: a numbered list of tailored
+    bullets in the SAME order as the input, plus a SUMMARY: section."""
+    summary = ""
+    m = re.search(r"SUMMARY\s*:\s*(.*?)(?=^\s*\d+[.)]\s|\Z)",
+                  text, flags=re.IGNORECASE | re.MULTILINE | re.DOTALL)
+    if m:
+        summary = " ".join(m.group(1).split())
+    out = []
+    for num, tail in re.findall(r"^\s*(\d+)[.)]\s+(.+)$", text,
+                                flags=re.MULTILINE):
+        idx = int(num) - 1
+        tail = tail.strip()
+        if 0 <= idx < len(bullets) and tail:
+            out.append({"original": bullets[idx], "tailored": tail})
+    seen = set()
+    clean = []
+    for item in sorted(out, key=lambda x: bullets.index(x["original"])):
+        if item["original"] not in seen:
+            seen.add(item["original"])
+            clean.append(item)
+    return {"summary": summary, "bullets": clean}
+
+
 def ai_tailor(resume_text, jd_text, bullets):
     """AI rewrite of the user's own bullets + summary, matched to the JD.
 
     Returns ({"summary": str, "bullets": [{"original": str, "tailored": str}]}, None)
-    or (None, error). Every tailored bullet must map back to one of the
-    supplied originals; anything unmapped is dropped, never invented."""
+    or (None, error). Every tailored bullet maps back to one of the
+    supplied originals by position; anything unmapped is dropped,
+    never invented."""
+    numbered = "\n".join(f"{i + 1}. {b}" for i, b in enumerate(bullets))
     prompt = f"""You are tailoring a resume to a job description. Rewrite the
 resume bullets and summary below so they speak the job description's
 language. STRICT RULES:
@@ -87,11 +101,10 @@ language. STRICT RULES:
   "LLM integration" and the resume says "RAG systems", keep the fact
   but use the JD's term only where it means the same thing).
 - If a JD requirement is NOT in the resume, do NOT add it — leave it out.
-- Return ONLY valid JSON, no markdown fences, no explanation:
-{{"summary": "rewritten summary, 2-3 lines, facts only",
-  "bullets": [{{"original": "<exact original bullet>",
-                "tailored": "<rewritten bullet>"}}]}}
-One entry per bullet below, in the same order.
+- Reply in PLAIN TEXT only, no JSON, no markdown, no explanation:
+  first a line "SUMMARY: <rewritten summary, 2-3 lines, facts only>",
+  then the rewritten bullets as a numbered list in the SAME order as
+  below, one per line, "1. <bullet>" etc. Keep every bullet on ONE line.
 
 JOB DESCRIPTION:
 {jd_text}
@@ -100,32 +113,18 @@ RESUME SUMMARY:
 {(resume_text or "")[:2000]}
 
 BULLETS:
-{chr(10).join("- " + b for b in bullets)}"""
+{numbered}"""
     text, err = _call(prompt)
     if err:
         return None, err
-    try:
-        data = _parse_json_response(text)
-    except json.JSONDecodeError:
-        # one retry with a stricter instruction, then give up honestly
-        text2, err2 = _call(prompt + "\n\nReturn ONLY the JSON object. "
-                            "No preamble, no markdown, no explanation.")
+    data = _parse_tailored_lines(text, bullets)
+    if not data["bullets"] and not data["summary"]:
+        text2, err2 = _call(prompt + "\n\nRemember: plain text only, "
+                             "SUMMARY: line first, then numbered bullets.")
         if err2:
             return None, err2
-        try:
-            data = _parse_json_response(text2)
-        except json.JSONDecodeError:
-            return None, ("Gemini ne valid JSON nahi diya — deterministic "
-                          "tailoring istemal karein.")
-    summary = (data.get("summary") or "").strip()
-    out_bullets = []
-    originals = {b.strip(): b for b in bullets}
-    for item in data.get("bullets") or []:
-        orig = (item.get("original") or "").strip()
-        tailored = (item.get("tailored") or "").strip()
-        if orig in originals and tailored:
-            out_bullets.append({"original": originals[orig],
-                                "tailored": tailored})
-    if not out_bullets and not summary:
-        return None, "Gemini se usable tailoring nahi mili — deterministic tailoring istemal karein."
-    return {"summary": summary, "bullets": out_bullets}, None
+        data = _parse_tailored_lines(text2, bullets)
+    if not data["bullets"] and not data["summary"]:
+        return None, ("Gemini se usable tailoring nahi mili — deterministic "
+                      "tailoring istemal karein.")
+    return data, None

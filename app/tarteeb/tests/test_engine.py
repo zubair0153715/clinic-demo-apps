@@ -95,12 +95,18 @@ def test_empty_inputs_do_not_crash():
     assert result["jd"]["keywords_total"] == 0
 
 
-def test_gemini_json_parse_tolerates_mess():
+def test_gemini_plain_text_parse():
     from app.tarteeb import gemini
-    messy = ('Here is the tailored resume:\n'
-             '```json\n{"summary": "Hi", "bullets": []}\n```\nHope this helps!')
-    assert gemini._parse_json_response(messy) == {"summary": "Hi", "bullets": []}
-    plain = '{"summary": "Hi", "bullets": []}'
-    assert gemini._parse_json_response(plain)["summary"] == "Hi"
-    with_prefix = 'Sure! {"summary": "Hi", "bullets": []} Done.'
-    assert gemini._parse_json_response(with_prefix)["summary"] == "Hi"
+    bullets = ["Built a pipeline screening 500 compounds.",
+               "Reduced report time by 40% with automation."]
+    reply = ("SUMMARY: Pharm-D student with Python and automation experience.\n"
+             "1. Built a drug-discovery pipeline screening 500 compounds.\n"
+             "2. Reduced report preparation time by 40% with automation.\n")
+    data = gemini._parse_tailored_lines(reply, bullets)
+    assert data["summary"].startswith("Pharm-D student")
+    assert len(data["bullets"]) == 2
+    assert data["bullets"][0]["original"] == bullets[0]
+    assert "500" in data["bullets"][0]["tailored"]
+    # out-of-range numbers and junk lines are dropped, never invented
+    junk = "1. Something new.\n9. Out of range.\n"
+    assert gemini._parse_tailored_lines(junk, bullets)["bullets"] == []
