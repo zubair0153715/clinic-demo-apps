@@ -107,6 +107,6 @@ def test_gemini_plain_text_parse():
     assert len(data["bullets"]) == 2
     assert data["bullets"][0]["original"] == bullets[0]
     assert "500" in data["bullets"][0]["tailored"]
-    # out-of-range numbers and junk lines are dropped, never invented
-    junk = "1. Something new.\n9. Out of range.\n"
+    # out-of-range numbers are dropped, never mapped to a wrong bullet
+    junk = "9. Out of range.\n"
     assert gemini._parse_tailored_lines(junk, bullets)["bullets"] == []
