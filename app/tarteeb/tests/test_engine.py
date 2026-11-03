@@ -6,9 +6,21 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+# Works in both layouts: standalone repo (package `tarteeb`) and
+# clinic-demo (package `app.tarteeb`).
+_HERE = os.path.dirname(__file__)
+for _base in (os.path.join(_HERE, "..", ".."),
+              os.path.join(_HERE, "..", "..", "..")):
+    sys.path.insert(0, os.path.abspath(_base))
+try:
+    from tarteeb import engine  # noqa: E402
+except ImportError:
+    from app.tarteeb import engine  # noqa: E402
 
-from app.tarteeb import engine  # noqa: E402
+import pytest  # noqa: E402
+
+CV_MD = os.path.expanduser("~/workspace/job-hunt/master-cv.md")
+CV_PDF = os.path.expanduser("~/workspace/job-hunt/Zubair-Ahmed-CV.pdf")
 
 C9_JD = """AI Automation Specialist — C9 Teams, remote.
 Build workflows with n8n, Make and Zapier, and Power Automate.
@@ -17,10 +29,14 @@ engineering, APIs and webhooks, JSON and databases, error handling
 and data privacy. Requirements: Python or JavaScript. Typically 2-4
 years of experience. This is a remote position."""
 
-MASTER_CV = open(os.path.expanduser(
-    "~/workspace/job-hunt/master-cv.md")).read()
+MASTER_CV = open(CV_MD).read() if os.path.exists(CV_MD) else ""
+
+needs_cv = pytest.mark.skipif(
+    not os.path.exists(CV_MD),
+    reason="real-CV fixtures live on the author's VM only")
 
 
+@needs_cv
 def test_c9_match_score_sane():
     result = engine.analyze(MASTER_CV, C9_JD)
     # Honest low overlap: this CV is pharma-research flavoured, the C9
@@ -37,6 +53,7 @@ def test_c9_match_score_sane():
         assert junk not in result["jd"]["missing"]
 
 
+@needs_cv
 def test_deterministic_tailoring_never_invents_numbers():
     import re
     result = engine.analyze(MASTER_CV, C9_JD)
@@ -53,6 +70,7 @@ def test_deterministic_tailoring_never_invents_numbers():
     assert len(tailored["bullet_pairs"]) == 7  # 2+2+2+1 bullets across 4 projects
 
 
+@needs_cv
 def test_tailoring_reorders_skills_to_jd():
     result = engine.analyze(MASTER_CV, C9_JD)
     tailored = engine.tailor_deterministic(result, C9_JD)
@@ -62,14 +80,16 @@ def test_tailoring_reorders_skills_to_jd():
     assert first in result["jd"]["skills_matched"] or True  # ordering best-effort
 
 
+@needs_cv
 def test_pdf_cv_extracts():
     from pypdf import PdfReader
-    reader = PdfReader(os.path.expanduser("~/workspace/job-hunt/Zubair-Ahmed-CV.pdf"))
+    reader = PdfReader(CV_PDF)
     text = "\n".join((p.extract_text() or "") for p in reader.pages)
     assert "Zubair" in text
     assert len(text) > 200
 
 
+@needs_cv
 def test_docx_export_roundtrip():
     from docx import Document
     import io
@@ -96,7 +116,10 @@ def test_empty_inputs_do_not_crash():
 
 
 def test_gemini_plain_text_parse():
-    from app.tarteeb import gemini
+    try:
+        from tarteeb import gemini
+    except ImportError:
+        from app.tarteeb import gemini
     bullets = ["Built a pipeline screening 500 compounds.",
                "Reduced report time by 40% with automation."]
     reply = ("SUMMARY: Pharm-D student with Python and automation experience.\n"
