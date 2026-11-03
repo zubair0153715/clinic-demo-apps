@@ -1,16 +1,30 @@
 """Tests for Larkana Property — approval queue, filters, WhatsApp link,
-phone validation, XSS escaping. Run: python3 -m pytest tests/ -q
+phone validation, XSS escaping.
+
+Works in both layouts: standalone repo (package `larkana`) and
+clinic-demo (package `app.larkana`).
+Run: ~/workspace/.venv-fc/bin/python -m pytest tests/ -q
 """
 
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+for _base in (os.path.join(_HERE, "..", ".."),
+              os.path.join(_HERE, "..", "..", "..")):
+    sys.path.insert(0, os.path.abspath(_base))
 
-from fastapi.testclient import TestClient
+try:
+    from app.main import app  # noqa: E402  (clinic-demo layout)
+    from app.larkana import db  # noqa: E402
+except ImportError:
+    from fastapi import FastAPI  # noqa: E402
+    from larkana.routes import router  # noqa: E402
+    from larkana import db  # noqa: E402
+    app = FastAPI()
+    app.include_router(router)
 
-from app.larkana import db
-from app.main import app
+from fastapi.testclient import TestClient  # noqa: E402
 
 client = TestClient(app, raise_server_exceptions=False)
 
@@ -101,6 +115,22 @@ def test_reject_hides_listing():
     assert db.counts()["live"] == 0
     r = client.get(f"/larkana-property/{lid}")
     assert r.status_code == 404
+
+
+def test_delete_removes_listing_and_photo():
+    # Regression: /delete must not be swallowed by the /{action} route.
+    _fresh()
+    os.environ["LARKANA_ADMIN_KEY"] = "test-key-123"
+    _post_listing()
+    lid = db.list_by_status("pending")[0]["id"]
+    r = client.post(f"/larkana-property/api/admin/{lid}/delete",
+                    headers={"X-Admin-Key": "test-key-123"})
+    assert r.json() == {"ok": True}
+    assert db.counts()["total"] == 0
+    assert db.get_listing(lid) is None
+    r = client.post(f"/larkana-property/api/admin/{lid}/delete",
+                    headers={"X-Admin-Key": "test-key-123"})
+    assert r.json() == {"ok": False}
 
 
 def test_filters():

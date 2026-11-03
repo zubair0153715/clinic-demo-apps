@@ -198,19 +198,13 @@ def admin_action(request: Request, lid: str, action: str):
     if not _admin_ok(request):
         return JSONResponse({"ok": False, "error": "unauthorized"},
                             status_code=401)
+    if action == "delete":
+        return {"ok": db.delete_listing(lid)}
     if action not in ("approve", "reject"):
         return JSONResponse({"ok": False, "error": "bad action"},
                             status_code=400)
     ok = db.set_status(lid, "approved" if action == "approve" else "rejected")
     return {"ok": ok}
-
-
-@router.post("/api/admin/{lid}/delete")
-def admin_delete(request: Request, lid: str):
-    if not _admin_ok(request):
-        return JSONResponse({"ok": False, "error": "unauthorized"},
-                            status_code=401)
-    return {"ok": db.delete_listing(lid)}
 
 
 @router.get("/{lid}", response_class=HTMLResponse)
