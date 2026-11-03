@@ -105,6 +105,19 @@ def get_login_checklist():
     return get_meta("login_checklist", "") or ""
 
 
+def get_team():
+    """Team state pushed by the VM (replies, follow-ups due, deadlines,
+    interview packs, offers). Returns {} when nothing synced yet."""
+    raw = get_meta("team")
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
 def get_profile():
     init_db()
     with _conn() as c:

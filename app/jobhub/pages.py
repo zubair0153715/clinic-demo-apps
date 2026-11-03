@@ -51,6 +51,9 @@ DASH = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <div class="note"><b>How this works:</b> __MODE_TEXT__</div>
 __LINKEDIN_NOTE__
 
+<h2>👥 Agent team — follow-ups, replies, deadlines</h2>
+__TEAM__
+
 <h2>🎯 Today's matches</h2>
 __MATCHES__
 
@@ -187,8 +190,86 @@ def _checklist_html(checklist):
     return ('<div class="note" style="background:#fff">%s</div>' % body)
 
 
+def _team_html(team):
+    team = team or {}
+    if not team:
+        return ('<div class="empty">Team state not synced yet — it arrives '
+                'with the next sync from the Hub.</div>')
+    parts = []
+    replies = team.get("replies") or {}
+    if replies:
+        rows = []
+        for _mid, r in sorted(replies.items()):
+            status = r.get("status") or "no_reply"
+            urgent = (' <b style="color:#b91c1c">⚠️ INTERVIEW — act today</b>'
+                      if status == "interview" else "")
+            rows.append("<tr><td><b>{t}</b><br><span class='muted'>{c}</span></td>"
+                        "<td>{s}{u}</td><td class='muted'>{sub}</td></tr>".format(
+                            t=_esc(r.get("title")), c=_esc(r.get("company")),
+                            s=_esc(status), u=urgent,
+                            sub=_esc(r.get("subject") or "—")))
+        parts.append("<h3 style='margin:14px 0 6px'>📬 Employer replies</h3>"
+                     "<table><tr><th>Application</th><th>Status</th>"
+                     "<th>Latest message</th></tr>" + "".join(rows) + "</table>")
+    due = team.get("followups_due") or []
+    if due:
+        rows = []
+        for f in due:
+            rows.append("<tr><td><b>{t}</b><br><span class='muted'>{c}</span></td>"
+                        "<td>{d} day(s) ago</td><td>{r}</td></tr>".format(
+                            t=_esc(f.get("title")), c=_esc(f.get("company")),
+                            d=f.get("days_since"),
+                            r=_esc(f.get("reason") or
+                                  ("ready to send" if f.get("can_send")
+                                   else "waiting"))))
+        parts.append("<h3 style='margin:14px 0 6px'>✉️ Follow-ups due</h3>"
+                     "<table><tr><th>Application</th><th>Applied</th>"
+                     "<th>State</th></tr>" + "".join(rows) + "</table>")
+    else:
+        parts.append("<p class='muted'>✉️ No follow-ups due — newest "
+                     "applications are under 7 days old.</p>")
+    deadlines = team.get("deadlines") or []
+    if deadlines:
+        rows = []
+        for d in deadlines:
+            hot = (" <b style='color:#b91c1c'>⚠️ soon</b>"
+                   if d.get("level") in ("due_1d", "due_3d", "due_7d") else "")
+            rows.append("<tr><td><b>{l}</b></td><td>{date}</td>"
+                        "<td>{n} day(s) left{hot}</td><td class='muted'>{note}</td></tr>".format(
+                            l=_esc(d.get("label")), date=_esc(d.get("date")),
+                            n=d.get("days_left"), hot=hot,
+                            note=_esc(d.get("note"))))
+        parts.append("<h3 style='margin:14px 0 6px'>⏰ Deadlines</h3>"
+                     "<table><tr><th>What</th><th>Date</th><th>Left</th>"
+                     "<th>Note</th></tr>" + "".join(rows) + "</table>")
+    packs = team.get("interview_packs") or []
+    offers = team.get("offers") or []
+    if packs or offers:
+        rows = []
+        for p in packs:
+            rows.append("<tr><td>🎤 Interview prep</td><td><b>{t}</b> @ {c}</td>"
+                        "<td class='muted'>{d}</td></tr>".format(
+                            t=_esc(p.get("title")), c=_esc(p.get("company")),
+                            d=_esc(p.get("created"))))
+        for o in offers:
+            rows.append("<tr><td>💰 Offer check</td><td><b>{t}</b> @ {c}</td>"
+                        "<td class='muted'>{d}</td></tr>".format(
+                            t=_esc(o.get("title")), c=_esc(o.get("company")),
+                            d=_esc(o.get("created"))))
+        parts.append("<h3 style='margin:14px 0 6px'>📁 Prep packs &amp; offer checks</h3>"
+                     "<table><tr><th>Kind</th><th>Role</th><th>Created</th></tr>"
+                     + "".join(rows) + "</table>")
+    as_of = team.get("as_of_pkt")
+    if as_of:
+        parts.append("<p class='muted'>Team state as of %s PKT. Interview "
+                     "packs and offer checks live in the job-hunt goal "
+                     "workspace (files/interview-prep, files/offer-checks)."
+                     "</p>" % _esc(as_of))
+    return "".join(parts)
+
+
 def render_dashboard(counts, matches, queue, applied, profile,
-                     config=None, checklist=""):
+                     config=None, checklist="", team=None):
     if matches:
         rows = []
         for m in matches[:50]:
@@ -240,6 +321,7 @@ def render_dashboard(counts, matches, queue, applied, profile,
     return (DASH.replace("__CSS__", CSS)
             .replace("__MODE_TEXT__", _mode_text(config))
             .replace("__LINKEDIN_NOTE__", _linkedin_note(config))
+            .replace("__TEAM__", _team_html(team))
             .replace("__CHECKLIST__", _checklist_html(checklist))
             .replace("__APPLIED_TODAY__", str(counts["applied_today"]))
             .replace("__CAP__", str(counts["daily_cap"]))
