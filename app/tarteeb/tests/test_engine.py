@@ -93,3 +93,14 @@ def test_empty_inputs_do_not_crash():
     result = engine.analyze("", "")
     assert result["score"] == 0
     assert result["jd"]["keywords_total"] == 0
+
+
+def test_gemini_json_parse_tolerates_mess():
+    from app.tarteeb import gemini
+    messy = ('Here is the tailored resume:\n'
+             '```json\n{"summary": "Hi", "bullets": []}\n```\nHope this helps!')
+    assert gemini._parse_json_response(messy) == {"summary": "Hi", "bullets": []}
+    plain = '{"summary": "Hi", "bullets": []}'
+    assert gemini._parse_json_response(plain)["summary"] == "Hi"
+    with_prefix = 'Sure! {"summary": "Hi", "bullets": []} Done.'
+    assert gemini._parse_json_response(with_prefix)["summary"] == "Hi"

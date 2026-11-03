@@ -25,7 +25,20 @@ def key_available() -> bool:
     return bool(_get_key())
 
 
-def _call(prompt, max_tokens=4000):
+def _parse_json_response(text):
+    """Parse Gemini's reply as JSON, tolerating markdown fences and
+    preamble/trailing prose around the object."""
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(),
+                     flags=re.MULTILINE).strip()
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        pass
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start >= 0 and end > start:
+        return json.loads(cleaned[start:end + 1])
+    raise json.JSONDecodeError("no JSON object found", cleaned, 0)
     key = _get_key()
     if not key:
         return None, ("AI ke liye GEMINI_API_KEY set nahi hai. "
@@ -88,12 +101,19 @@ BULLETS:
     text, err = _call(prompt)
     if err:
         return None, err
-    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(),
-                     flags=re.MULTILINE).strip()
     try:
-        data = json.loads(cleaned)
+        data = _parse_json_response(text)
     except json.JSONDecodeError:
-        return None, "Gemini ne valid JSON nahi diya — deterministic tailoring istemal karein."
+        # one retry with a stricter instruction, then give up honestly
+        text2, err2 = _call(prompt + "\n\nReturn ONLY the JSON object. "
+                            "No preamble, no markdown, no explanation.")
+        if err2:
+            return None, err2
+        try:
+            data = _parse_json_response(text2)
+        except json.JSONDecodeError:
+            return None, ("Gemini ne valid JSON nahi diya — deterministic "
+                          "tailoring istemal karein.")
     summary = (data.get("summary") or "").strip()
     out_bullets = []
     originals = {b.strip(): b for b in bullets}
