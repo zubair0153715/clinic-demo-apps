@@ -49,6 +49,7 @@ from app.lablink.routes import router as lablink_router
 from app.stats.routes import router as stats_router
 from app.jobhub.routes import router as jobhub_router
 from app.tarteeb.routes import router as tarteeb_router
+from app.larkana.routes import router as larkana_router
 from app.strait_signal import collector as strait_signal_collector
 
 logging.basicConfig(level=logging.INFO)
@@ -106,6 +107,7 @@ app.include_router(lablink_router)
 app.include_router(stats_router)
 app.include_router(jobhub_router)
 app.include_router(tarteeb_router)
+app.include_router(larkana_router)
 
 WHATSAPP = "https://wa.me/923116925020?text=Hi!%20I%27m%20interested%20in%20the%2024%2F7%20AI%20receptionist%20for%20our%20clinic."
 DEMO_URL = "https://clinic-demo.fastapicloud.dev/demo"
