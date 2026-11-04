@@ -1,7 +1,9 @@
 """Auto-Apply Hub routes — dashboard + profile vault + worker API.
 
 Unlisted route (/jobhub): no link from the landing page, noindex.
-Worker API is key-gated (X-Worker-Key == JOBHUB_WORKER_KEY env var).
+Dashboard is owner-only: sign in at /jobhub/login with the JOBHUB_PASSWORD
+secret (set in the FastAPI Cloud dashboard). Worker API is key-gated
+(X-Worker-Key == JOBHUB_WORKER_KEY env var) and is not affected by login.
 """
 
 import os
@@ -9,6 +11,7 @@ import os
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
+from . import auth
 from . import db
 from . import pages
 
@@ -22,8 +25,47 @@ def _worker_ok(request: Request) -> bool:
     return request.headers.get("X-Worker-Key") == key
 
 
+def _authed(request: Request) -> bool:
+    return auth.valid_session(request.cookies.get(auth.COOKIE, ""))
+
+
+def _need_login():
+    return RedirectResponse("/jobhub/login", status_code=303)
+
+
+@router.get("/login", response_class=HTMLResponse)
+def login_form(request: Request):
+    if _authed(request):
+        return RedirectResponse("/jobhub", status_code=303)
+    return pages.render_login_page(setup_needed=not auth.password_set())
+
+
+@router.post("/login")
+async def login_submit(request: Request, password: str = Form("")):
+    if not auth.password_set():
+        return pages.render_login_page(
+            error="Password not set yet.",
+            setup_needed=True)
+    if not auth.check_password(password):
+        return pages.render_login_page(error="Wrong password — try again.")
+    resp = RedirectResponse("/jobhub", status_code=303)
+    resp.set_cookie(auth.COOKIE, auth.new_session(),
+                    max_age=auth.SESSION_DAYS * 86400, httponly=True)
+    return resp
+
+
+@router.get("/logout")
+def logout(request: Request):
+    auth.destroy_session(request.cookies.get(auth.COOKIE, ""))
+    resp = RedirectResponse("/jobhub/login", status_code=303)
+    resp.delete_cookie(auth.COOKIE)
+    return resp
+
+
 @router.get("", response_class=HTMLResponse)
-def index():
+def index(request: Request):
+    if not _authed(request):
+        return _need_login()
     counts = db.counts()
     matches = db.get_matches()
     queue = db.get_queue()
@@ -36,12 +78,15 @@ def index():
 
 
 @router.get("/profile", response_class=HTMLResponse)
-def profile_form():
+def profile_form(request: Request):
+    if not _authed(request):
+        return _need_login()
     return pages.render_profile_form(db.get_profile())
 
 
 @router.post("/profile")
 async def profile_save(
+    request: Request,
     name: str = Form(""), cv_name: str = Form(""), email: str = Form(""),
     phone: str = Form(""), city: str = Form(""), country: str = Form(""),
     dob: str = Form(""), degree: str = Form(""), institution: str = Form(""),
@@ -51,6 +96,8 @@ async def profile_save(
     pharmareg: str = Form(""), leadforge: str = Form(""),
     relocation: str = Form(""), daily_cap: str = Form("4"),
 ):
+    if not _authed(request):
+        return _need_login()
     try:
         start_year_i = int(start_year)
     except Exception:
@@ -74,7 +121,10 @@ async def profile_save(
 
 
 @router.get("/api/status")
-def api_status():
+def api_status(request: Request):
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "unauthorized"},
+                            status_code=401)
     return {"ok": True, **db.counts()}
 
 

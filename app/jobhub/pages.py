@@ -47,7 +47,8 @@ DASH = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <div class="card"><b>__PROFILE__</b><span>profile complete</span></div>
 </div>
 <p style="margin-top:14px"><a class="btn" href="/jobhub/profile">✏️ Edit profile &amp; CV data</a>
-<a class="btn ghost" href="/jobhub/profile" style="margin-left:8px">Profile: __NAME__ · __EMAIL__</a></p>
+<a class="btn ghost" href="/jobhub/profile" style="margin-left:8px">Profile: __NAME__ · __EMAIL__</a>
+<a href="/jobhub/logout" style="margin-left:14px">Logout</a></p>
 <div class="note"><b>How this works:</b> __MODE_TEXT__</div>
 __LINKEDIN_NOTE__
 
@@ -334,6 +335,35 @@ def render_dashboard(counts, matches, queue, applied, profile,
             .replace("__MATCHES__", matches_html)
             .replace("__QUEUE__", queue_html)
             .replace("__APPLIED__", applied_html))
+
+
+LOGIN = """<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Auto-Apply Hub — Sign in</title>
+<style>__CSS__</style></head><body>
+<header><div class="wrap"><h1>🔐 Auto-Apply Hub</h1>
+<p>Private dashboard — sign in to see your job hunt.</p></div></header>
+<div class="wrap" style="max-width:480px">
+__ERROR__
+__SETUP__
+<form method="post" action="/jobhub/login">
+<label>Password</label><input type="password" name="password" autofocus autocomplete="current-password">
+<p><button class="btn" type="submit" style="border:0;cursor:pointer">Sign in</button></p>
+</form>
+<p class="muted">30-day session on this device. Only you have the password — it is set in the FastAPI Cloud dashboard, never stored in the code.</p>
+</div></body></html>"""
+
+
+def render_login_page(error="", setup_needed=False):
+    err = ('<div class="note" style="background:#fdecea;border-color:#f5a9a0">'
+           + _esc(error) + '</div>') if error else ""
+    setup = ('<div class="note">Password not set yet — set the '
+             '<b>JOBHUB_PASSWORD</b> secret in the FastAPI Cloud dashboard, '
+             'then sign in here.</div>') if setup_needed else ""
+    return (LOGIN.replace("__CSS__", CSS)
+            .replace("__ERROR__", err)
+            .replace("__SETUP__", setup))
 
 
 def render_profile_form(profile):

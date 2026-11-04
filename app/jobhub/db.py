@@ -67,6 +67,30 @@ def init_db():
                       applied_at TEXT NOT NULL DEFAULT '')""")
         c.execute("""CREATE TABLE IF NOT EXISTS meta
                      (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '')""")
+        c.execute("""CREATE TABLE IF NOT EXISTS sessions
+                     (token TEXT PRIMARY KEY,
+                      expires_at INTEGER NOT NULL)""")
+
+
+def add_session(token, expires_at):
+    init_db()
+    with _conn() as c:
+        c.execute("INSERT OR REPLACE INTO sessions (token, expires_at) "
+                  "VALUES (?, ?)", (token, int(expires_at)))
+
+
+def get_session(token):
+    init_db()
+    with _conn() as c:
+        row = c.execute("SELECT token, expires_at FROM sessions WHERE token = ?",
+                        (token,)).fetchone()
+    return dict(row) if row else None
+
+
+def delete_session(token):
+    init_db()
+    with _conn() as c:
+        c.execute("DELETE FROM sessions WHERE token = ?", (token,))
 
 
 def set_meta(key, value):
