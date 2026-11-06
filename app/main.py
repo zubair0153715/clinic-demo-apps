@@ -46,6 +46,7 @@ from app.awaaz.routes import router as awaaz_router
 from app.shajra.routes import router as shajra_router
 from app.waqt.routes import router as waqt_router
 from app.zubaan.routes import router as zubaan_router
+from app.khulasa.routes import router as khulasa_router
 from app.agency.routes import router as agency_router
 from app.lablink.routes import router as lablink_router
 from app.stats.routes import router as stats_router
@@ -106,6 +107,7 @@ app.include_router(awaaz_router)
 app.include_router(shajra_router)
 app.include_router(waqt_router)
 app.include_router(zubaan_router)
+app.include_router(khulasa_router)
 app.include_router(agency_router)
 app.include_router(lablink_router)
 app.include_router(stats_router)
