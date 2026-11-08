@@ -133,8 +133,11 @@ def lookup(generic):
             total = 0
 
     # 3. Serious report count
+    # openFDA: serious:1 = serious, serious:2 = NON-serious (verified live
+    # 2026-11-08: acetaminophen serious:1 = 426,113, serious:2 = 71,710).
+    # Was serious:2 — the "serious" stat was actually the non-serious count.
     ser = _get_json(f"{BASE}/event.json",
-                    {"search": f"{med} AND serious:2", "limit": 1})
+                    {"search": f"{med} AND serious:1", "limit": 1})
     serious = 0
     if ser:
         try:
