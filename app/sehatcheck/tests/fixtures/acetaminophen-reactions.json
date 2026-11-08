@@ -1,0 +1,50 @@
+{
+ "meta": {
+  "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+  "terms": "https://open.fda.gov/terms/",
+  "license": "https://open.fda.gov/license/",
+  "last_updated": "2026-10-28"
+ },
+ "results": [
+  {
+   "term": "DRUG DEPENDENCE",
+   "count": 51264
+  },
+  {
+   "term": "OVERDOSE",
+   "count": 45769
+  },
+  {
+   "term": "PAIN",
+   "count": 43148
+  },
+  {
+   "term": "DEPENDENCE",
+   "count": 37018
+  },
+  {
+   "term": "DEATH",
+   "count": 29968
+  },
+  {
+   "term": "TOXICITY TO VARIOUS AGENTS",
+   "count": 29318
+  },
+  {
+   "term": "FATIGUE",
+   "count": 29227
+  },
+  {
+   "term": "DRUG INEFFECTIVE",
+   "count": 28524
+  },
+  {
+   "term": "OFF LABEL USE",
+   "count": 28018
+  },
+  {
+   "term": "NAUSEA",
+   "count": 27504
+  }
+ ]
+}

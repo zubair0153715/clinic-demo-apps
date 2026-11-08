@@ -1,0 +1,12 @@
+{
+ "meta": {
+  "disclaimer": "x",
+  "terms": "x",
+  "license": "x",
+  "last_updated": "2026-10-28"
+ },
+ "error": {
+  "code": "NOT_FOUND",
+  "message": "No matches found!"
+ }
+}

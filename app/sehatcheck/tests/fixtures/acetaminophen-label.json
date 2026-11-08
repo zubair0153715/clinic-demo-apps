@@ -1,0 +1,43 @@
+{
+ "meta": {
+  "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+  "terms": "https://open.fda.gov/terms/",
+  "license": "https://open.fda.gov/license/",
+  "last_updated": "2026-11-06",
+  "results": {
+   "skip": 0,
+   "limit": 1,
+   "total": 3176
+  }
+ },
+ "results": [
+  {
+   "warnings": [
+    "Warnings Liver warning: This product contains acetaminophen. Severe liver damage may occur if you take more than 4,000 mg of acetaminophen in 24 hours with other drugs containing acetaminophen 3 or more alcoholic drinks every day while using this product Allergy alert: Acetaminophen may cause severe skin reactions. Symptoms may include: skin reddening blisters rash If a skin reaction occurs, stop use and seek medical help right away. Do not use if you are allergic to acetaminophen or any of the inactive ingredients in this product with any other drug containing acetaminophen (prescription or n"
+   ],
+   "dosage_and_administration": [
+    "Directions do not take more than directed adults and children 12 years and over take 2 gelcaps every 6 hours while symptoms last do not take more than 6 gelcaps in 24 hours, unless directed by a doctor do not take for more than 10 days unless directed by a doctor children under 12 years: ask a doctor"
+   ],
+   "openfda": {
+    "brand_name": [
+     "Pain Reliever Extra Strength"
+    ],
+    "generic_name": [
+     "ACETAMINOPHEN"
+    ],
+    "manufacturer_name": [
+     "Valu Merchandisers Company"
+    ],
+    "product_type": [
+     "HUMAN OTC DRUG"
+    ],
+    "route": [
+     "ORAL"
+    ]
+   },
+   "spl_product_data_elements": [
+    "Pain Reliever Extra Strength Acetaminophen ACETAMINOPHEN ACETAMINOPHEN CROSCARMELLOSE SODIUM D&C RED NO. 33 FD&C BLUE NO. 1 FD&C RED NO. 40 GELATIN, UNSPECIFIED HYDROXYPROPYL CELLULOSE, UNSPECIFIED HYPROMELLOSE, UNSPECIFIED FERROSOFERRIC OXIDE FERRIC OXIDE RED FERRIC OXIDE YELLOW POLYETHYLENE GLYCOL, UNSPECIFIED POVIDONE, UNSPECIFIED STARCH, CORN PROPYLENE GLYCOL SHELLAC STEARIC ACID TITANIUM DIOXIDE L;5"
+   ]
+  }
+ ]
+}

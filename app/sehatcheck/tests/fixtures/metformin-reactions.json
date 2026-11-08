@@ -1,0 +1,50 @@
+{
+ "meta": {
+  "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+  "terms": "https://open.fda.gov/terms/",
+  "license": "https://open.fda.gov/license/",
+  "last_updated": "2026-10-28"
+ },
+ "results": [
+  {
+   "term": "NAUSEA",
+   "count": 30628
+  },
+  {
+   "term": "DIARRHOEA",
+   "count": 28491
+  },
+  {
+   "term": "BLOOD GLUCOSE INCREASED",
+   "count": 27306
+  },
+  {
+   "term": "DRUG INEFFECTIVE",
+   "count": 22828
+  },
+  {
+   "term": "FATIGUE",
+   "count": 21656
+  },
+  {
+   "term": "LACTIC ACIDOSIS",
+   "count": 20648
+  },
+  {
+   "term": "VOMITING",
+   "count": 20022
+  },
+  {
+   "term": "ACUTE KIDNEY INJURY",
+   "count": 18889
+  },
+  {
+   "term": "WEIGHT DECREASED",
+   "count": 17453
+  },
+  {
+   "term": "DYSPNOEA",
+   "count": 17005
+  }
+ ]
+}

@@ -1,0 +1,43 @@
+{
+ "meta": {
+  "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+  "terms": "https://open.fda.gov/terms/",
+  "license": "https://open.fda.gov/license/",
+  "last_updated": "2026-11-06",
+  "results": {
+   "skip": 0,
+   "limit": 1,
+   "total": 366
+  }
+ },
+ "results": [
+  {
+   "adverse_reactions": [
+    "6 ADVERSE REACTIONS The following clinically significant adverse reactions are described elsewhere in labeling: Anaphylactic reactions [see Warnings and Precautions (5.1) ] Severe Cutaneous Adverse Reactions (SCAR) [see Warnings and Precautions (5.2) ] Drug-Induced Enterocolitis Syndrome (DIES) [see Warnings and Precautions (5.3) ] Hepatic Dysfunction [see Warnings and Precautions (5.4) ] Clostridioides difficile- Associated Diarrhea (CDAD) [see Warnings and Precautions (5.5) ] Skin Rash in Patients with Mononucleosis [see Warnings and Precautions (5.6) ] The most frequently reported adverse r"
+   ],
+   "dosage_and_administration": [
+    "2 DOSAGE AND ADMINISTRATION Pediatric Patients aged 3 months to 12 years weighing less than or equal to 40 kg: 90 mg/kg/day divided every 12 hours, administered for 10 days. ( 2 ) 2.1 Important Administration Instructions To minimize the potential for gastrointestinal intolerance, amoxicillin and clavulanate potassium for oral suspension, 600 mg/42.9 mg per 5 mL should be taken at the start of a meal. Absorption of clavulanate potassium may be enhanced when amoxicillin and clavulanate potassium for oral suspension, 600 mg/42.9 mg per 5 mL is administered at the start of a meal. 2.2 Dosage in P"
+   ],
+   "openfda": {
+    "brand_name": [
+     "amoxicillin and clavulanate potassium"
+    ],
+    "generic_name": [
+     "AMOXICILLIN AND CLAVULANATE POTASSIUM"
+    ],
+    "manufacturer_name": [
+     "Chartwell RX, LLC"
+    ],
+    "product_type": [
+     "HUMAN PRESCRIPTION DRUG"
+    ],
+    "route": [
+     "ORAL"
+    ]
+   },
+   "spl_product_data_elements": [
+    "amoxicillin and clavulanate potassium amoxicillin and clavulanate potassium AMOXICILLIN AMOXICILLIN ANHYDROUS CLAVULANATE POTASSIUM CLAVULANIC ACID ASPARTAME ANHYDROUS CITRIC ACID SILICON DIOXIDE MANNITOL HYPROMELLOSE 2910 (5 MPA.S) ANHYDROUS TRISODIUM CITRATE SACCHARIN SODIUM XANTHAN GUM"
+   ]
+  }
+ ]
+}
