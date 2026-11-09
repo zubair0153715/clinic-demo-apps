@@ -49,6 +49,7 @@ from app.zubaan.routes import router as zubaan_router
 from app.khulasa.routes import router as khulasa_router
 from app.dak.routes import router as dak_router
 from app.sukoon.routes import router as sukoon_router
+from app.sathi.routes import router as sathi_router
 from app.sehatcheck.routes import router as sehatcheck_router
 from app.agency.routes import router as agency_router
 from app.lablink.routes import router as lablink_router
@@ -113,6 +114,7 @@ app.include_router(zubaan_router)
 app.include_router(khulasa_router)
 app.include_router(dak_router)
 app.include_router(sukoon_router)
+app.include_router(sathi_router)
 app.include_router(sehatcheck_router)
 app.include_router(agency_router)
 app.include_router(lablink_router)
