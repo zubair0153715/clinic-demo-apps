@@ -182,6 +182,6 @@ def pubchem_similar(smiles, threshold=80, max_records=30):
     """PubChem 2D similarity search (fastsimilarity). Returns CIDs + scores."""
     def fn():
         q = urllib.parse.quote(smiles.strip(), safe="")
-        d = _get(f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity/smiles/{q}/cids/JSON?Threshold={threshold}&MaxRecords={max_records}")
+        d = _get(f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/smiles/{q}/cids/JSON?Threshold={threshold}&MaxRecords={max_records}")
         return d.get("IdentifierList", {}).get("CID") or []
     return _cached(f"pcsim:{smiles.strip().lower()}:{threshold}", fn)
