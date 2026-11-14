@@ -61,6 +61,7 @@ from app.larkana.routes import router as larkana_router
 from app.bolo.routes import router as bolo_router
 from app.poda.routes import router as poda_router
 from app.daftar.routes import router as daftar_router
+from app.kirdar.routes import router as kirdar_router
 from app.strait_signal import collector as strait_signal_collector
 
 logging.basicConfig(level=logging.INFO)
@@ -130,6 +131,7 @@ app.include_router(larkana_router)
 app.include_router(bolo_router)
 app.include_router(poda_router)
 app.include_router(daftar_router)
+app.include_router(kirdar_router)
 
 WHATSAPP = "https://wa.me/923116925020?text=Hi!%20I%27m%20interested%20in%20the%2024%2F7%20AI%20receptionist%20for%20our%20clinic."
 DEMO_URL = "https://clinic-demo.fastapicloud.dev/demo"
